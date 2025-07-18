@@ -1,0 +1,40 @@
+:host {
+  /* asegúrate de que tu selector englobe todo el área del componente */
+  display: block;
+  width: 100%;
+  height: calc(
+    100vh - 64px - 48px
+  ); /* o la altura que quieras para tu “hero” */
+  background: url("/images/bg_home.png") center/cover no-repeat;
+}
+
+/* si quieres superponer un overlay semitransparente */
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* y tu texto encima */
+.hero-text {
+  position: relative;
+  z-index: 1;
+  color: black;
+  text-align: left;
+  padding: 2rem;
+  /* etc… */
+}
+
+.textA-size {
+  font-size: 4.5rem;
+  margin-top: 10rem;
+  z-index: 1;
+}
+
+.textB-size {
+  font-size: 1.5rem;
+  margin-top: 1rem;
+  z-index: 1;
+}

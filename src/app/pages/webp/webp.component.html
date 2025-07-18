@@ -1,0 +1,87 @@
+<!-- Banner full-width -->
+<div
+  class="webp-banner"
+  [ngStyle]="{
+    'background-image': 'url(' + bannerUrl + ')',
+    'height.px': bannerHeight
+  }"
+>
+  <div class="webp-banner__overlay"></div>
+  <div class="webp-banner__text">
+    <h2>CONVERSIÓN DE IMÁGENES</h2>
+    <p>
+      Carga tus imágenes en formato PNG o JPG y conviértelas a un formato más
+      liviano WEBP
+    </p>
+  </div>
+</div>
+
+<section class="webp-content">
+  <!-- input oculto -->
+  <input
+    #fileInput
+    type="file"
+    accept="image/png, image/jpeg"
+    multiple
+    hidden
+    (change)="onFilesSelected($event)"
+  />
+
+  <!-- ETAPA 1: solo CARGAR -->
+  <div *ngIf="step === 'select'" class="stageLoad">
+    <img src="/images/bgLoad.png" class="icon" />
+    <p class="webp-content__label">Carga máximo 50 imágenes para convertir</p>
+    <button mat-raised-button class="btn-color" (click)="fileInput.click()">
+      CARGAR
+    </button>
+  </div>
+
+  <!-- ETAPA 2: CANCELAR / CONVERTIR -->
+  <div *ngIf="step === 'ready'" class="stageLoad">
+    <img src="/images/check_webp.png" class="icon" />
+    <p class="webp-content__label">
+      {{ selectedFiles.length }} imagen{{
+        selectedFiles.length > 1 ? "es" : ""
+      }}
+      cargada{{ selectedFiles.length > 1 ? "s" : "" }} con éxito. Inicia el
+      proceso de conversión.
+    </p>
+  </div>
+
+  <div *ngIf="step === 'ready'" class="stageConvert">
+    <button mat-raised-button class="btn-color" (click)="cancelSelection()">
+      CANCELAR
+    </button>
+    <button
+      mat-raised-button
+      class="btn-color"
+      [disabled]="!canConvert"
+      (click)="uploadFiles()"
+    >
+      CONVERTIR
+    </button>
+  </div>
+
+  <!-- ETAPA 3: Procesando -->
+  <section class="webp-content" *ngIf="step === 'processing'">
+    <img src="/images/loading_webp.png" class="icon" />
+    <p class="webp-content__label">Procesando… {{ progress }}%</p>
+    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+  </section>
+
+  <!-- ETAPA 4: TERMINADO -->
+  <div *ngIf="step === 'done'" class="stageLoad">
+    <img src="/images/loading_webp.png" class="icon" />
+  </div>
+  <div *ngIf="step === 'done'" class="stageConvert">
+    <button mat-raised-button class="btn-color" (click)="reset()">
+      FINALIZAR
+    </button>
+    <button mat-raised-button class="btn-color" (click)="download()">
+      DESCARGAR
+    </button>
+  </div>
+
+  <!-- Mensaje de error global -->
+  <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+</section>

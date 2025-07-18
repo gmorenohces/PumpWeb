@@ -1,0 +1,39 @@
+<div class="controls-wrapper">
+  <div class="controls">
+    <input type="file" #fileInput accept="image/*" (change)="onFileChange()" />
+    <select [(ngModel)]="selectedRatio" (change)="updateRatio()">
+      <option *ngFor="let r of ratios" [ngValue]="r.value">
+        {{ r.label }}
+      </option>
+    </select>
+    <input
+      *ngIf="!selectedRatio"
+      type="number"
+      [(ngModel)]="customWidth"
+      (ngModelChange)="updateCustom()"
+      placeholder="Width (px)"
+    />
+    <input
+      *ngIf="!selectedRatio"
+      type="number"
+      [(ngModel)]="customHeight"
+      (ngModelChange)="updateCustom()"
+      placeholder="Height (px)"
+    />
+  </div>
+</div>
+
+<div class="canvas-container">
+  <canvas #canvasEl class="canvas"></canvas>
+</div>
+
+<div class="action-bar">
+  <!-- offsets si los quieres mostrar a la derecha -->
+  <button (click)="newProcess()" *ngIf="resultUrlROI">Nuevo</button>
+  <button (click)="exportMask()">Generar</button>
+</div>
+
+<div *ngIf="resultUrlROI" class="preview">
+  <h3>ROI Procesada:</h3>
+  <img class="roi-preview" [src]="resultUrlROI" alt="ROI preview" />
+</div>

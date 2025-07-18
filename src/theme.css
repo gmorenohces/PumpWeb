@@ -1,0 +1,30 @@
+/* Custom Theming for Angular Material (Versión CSS adaptada) */
+
+/* NOTA:
+   Este archivo originalmente usa SCSS con Angular Material.
+   Las directivas @use, @include y variables SCSS no pueden ser utilizadas directamente en CSS.
+   Para usar Angular Material en CSS puro, deberías compilar el SCSS con Angular CLI o un preprocesador como Sass.
+*/
+
+/* Este bloque normalmente se importa y procesa desde Angular:
+@use '@angular/material' as mat;
+@include mat.core();
+*/
+
+/* Variables y temas SCSS (no disponibles directamente en CSS)
+$web-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette
+    ),
+    density: (
+      scale: 0
+    )
+  )
+);
+*/
+
+/* En CSS, no se pueden aplicar mixins como @include. Se recomienda compilar SCSS. */
+  
+/* Tip*

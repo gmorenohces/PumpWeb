@@ -1,0 +1,31 @@
+<header class="app-header">
+  <div class="header__logo">
+    <img src="images/pump.png" alt="Pump Logo" />
+  </div>
+  <nav class="header__nav">
+    <a
+      *ngFor="let link of links"
+      [routerLink]="link.path"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="header__link"
+    >
+      {{ link.label }}
+    </a>
+  </nav>
+  <div class="header__avatar">
+    <mat-icon>account_circle</mat-icon>
+  </div>
+</header>
+
+<main class="page-container">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="app-footer">
+  <!-- aquí podrías poner tu copyright, enlaces, etc -->
+  <div class="footer__inner">
+    © 2025 Pump - Universidad CES |<a href="#">Privacidad</a> |
+    <a href="#">Términos</a>
+  </div>
+</footer>

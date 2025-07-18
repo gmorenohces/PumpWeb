@@ -1,0 +1,63 @@
+body {
+    background-color: #ffffff; /* background */
+  }
+  
+  header {
+    background-color: #003349; /* header */
+    color: #ffffff;            /* header contrast */
+  }
+  
+  .primary {
+    background-color: #000000;
+    color: #ffffff;
+  }
+  
+  .secondary {
+    background-color: #f2f0f0;
+    color: #000000;
+  }
+  
+  .tertiary {
+    background-color: #ebebeb;
+    color: #7a9db1;
+  }
+  
+  .success {
+    background-color: #35b501;
+    color: #ffffff;
+  }
+  
+  .warning {
+    background-color: #f9d100;
+    color: #000000;
+  }
+  
+  .error {
+    background-color: #ff0000;
+    color: #ffffff;
+  }
+  
+  .gray {
+    background-color: #e4e5e5;
+    color: #000000;
+  }
+  
+  /* Otros estilos */
+  .sidenav-container {
+    width: auto;
+  }
+  
+  .list-item {
+    height: 38px;
+  }
+  
+  .filled-button {
+    padding: 0 40px;
+    height: 32px;
+  }
+  
+  .outlined-button {
+    padding: 0 40px;
+    height: 32px;
+  }
+  

@@ -1,0 +1,153 @@
+/* Contenedor principal */
+.login-wrapper {
+  display: flex;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Panel izquierdo con la imagen de fondo */
+.login-wrapper .login-left {
+  flex: 0 0 60%;
+  background: url("/images/bg_login.webp") center / cover no-repeat;
+}
+
+/* Panel derecho */
+.login-wrapper .login-right {
+  flex: 0 0 40%;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 3rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Cabecera de marca dentro del login-right */
+.login-wrapper .login-right .login-brand {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-wrapper .login-right .login-brand .brand-title {
+  font-family: "Roboto", sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0;
+  color: #111;
+}
+
+.login-wrapper .login-right .login-brand .brand-subtitle {
+  margin: 0.5rem 0 0;
+  font-family: "Roboto", sans-serif;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* Formulario */
+.login-wrapper .login-right .login-form {
+  width: 100%;
+}
+
+.login-wrapper .login-right .login-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.login-wrapper .login-right .login-form .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Input con icono */
+.login-wrapper .login-right .login-form .form-group .input-wrapper {
+  position: relative;
+}
+
+.login-wrapper .login-right .login-form .form-group .input-wrapper .icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  color: #888;
+}
+
+.login-wrapper .login-right .login-form .form-group .input-wrapper input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-wrapper .login-right .login-form .form-group .input-wrapper input:focus {
+  border-color: #1976d2;
+}
+
+/* Botón principal */
+.login-wrapper .login-right .login-form .btn-primary {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem 1rem;
+  background-color: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 0.5rem;
+}
+
+/* Estados del botón */
+.login-wrapper .login-right .login-form .btn-primary:disabled {
+  background-color: #90caf9;
+  cursor: not-allowed;
+}
+
+.login-wrapper .login-right .login-form .btn-primary:not(:disabled):hover {
+  background-color: #1565c0;
+}
+
+/* Link de registro */
+.login-wrapper .login-right .login-form .register {
+  text-align: center;
+  margin: 1.5rem 0 0.5rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.login-wrapper .login-right .login-form .register a {
+  color: #1976d2;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 0.25rem;
+}
+
+/* Mensaje de error */
+.login-wrapper .login-right .login-form .error-text {
+  margin-top: 0.5rem;
+  color: #d32f2f;
+  text-align: center;
+}
+
+/* Media query para dispositivos pequeños */
+@media (max-width: 768px) {
+  .login-wrapper {
+    flex-direction: column;
+  }
+  .login-wrapper .login-left {
+    height: 40vh;
+  }
+  .login-wrapper .login-right {
+    max-width: none;
+    padding: 1.5rem;
+  }
+}

@@ -1,0 +1,11 @@
+<!-- success-dialog.component.html -->
+<div class="dialog-content" [ngClass]="panelClass">
+  <h2 class="dialog-title">
+    <mat-icon>{{ icon }}</mat-icon>
+    {{ title }}
+  </h2>
+  <p class="dialog-message">{{ data.message }}</p>
+  <div class="dialog-actions">
+    <button mat-button color="primary" (click)="close()">Cerrar</button>
+  </div>
+</div>

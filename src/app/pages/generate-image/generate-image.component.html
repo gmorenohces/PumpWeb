@@ -1,0 +1,105 @@
+<!-- Banner full-width (tal como lo tenías) -->
+<div
+  class="banner"
+  [ngStyle]="{
+    'background-image': 'url(' + bannerUrl + ')',
+    'height.px': bannerHeight
+  }"
+>
+  <div class="banner__overlay"></div>
+  <div class="banner__text">
+    <h2>GENERACIÓN DE IMÁGENES</h2>
+    <p>Imagina, sueña y crea</p>
+    <p>Un buen prompt es la clave para dar vida a tus ideas</p>
+  </div>
+</div>
+
+<div class="generate-layout">
+  <!-- PANEL IZQUIERDO: formulario + agregar nodo -->
+  <mat-card class="panel left-panel">
+    <mat-card-content class="panel__inner">
+      <form class="form">
+        <!-- Prompt -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Prompt</mat-label>
+          <textarea
+            matInput
+            rows="4"
+            [(ngModel)]="prompt"
+            name="prompt"
+          ></textarea>
+        </mat-form-field>
+
+        <!-- Selección de nodo y número de imágenes -->
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Nodo</mat-label>
+            <mat-select
+              [(ngModel)]="selectedNodeIndex"
+              name="selectedNodeIndex"
+            >
+              <mat-option *ngFor="let n of nodes; let i = index" [value]="i">
+                {{ n.id }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Cantidad</mat-label>
+            <input
+              matInput
+              type="number"
+              min="1"
+              max="10"
+              [(ngModel)]="numImages"
+              name="numImages"
+            />
+          </mat-form-field>
+        </div>
+
+        <!-- Botones -->
+        <button
+          mat-stroked-button
+          color="primary"
+          (click)="addNode()"
+          [disabled]="nodes.length >= 4"
+          class="full-width"
+        >
+          Añadir nodo
+        </button>
+
+        <button
+          mat-raised-button
+          color="accent"
+          (click)="generate()"
+          [disabled]="!canGenerate()"
+          class="full-width"
+        >
+          GENERAR
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- PANEL DERECHO: grilla de nodos -->
+  <mat-card class="panel right-panel">
+    <mat-card-content class="panel__inner panel__preview">
+      <!-- aquí aplicamos la clase dinámica según número de nodos -->
+      <div class="nodes-grid" [ngClass]="'count-' + nodes.length">
+        <ng-container *ngFor="let node of nodes">
+          <div class="node-card">
+            <ng-container *ngIf="node.url; else empty">
+              <img [src]="node.url" alt="Nodo {{ node.id }}" />
+            </ng-container>
+            <ng-template #empty>
+              <div class="placeholder">
+                <mat-icon>image</mat-icon>
+                <p>Nodo {{ node.id }}</p>
+              </div>
+            </ng-template>
+          </div>
+        </ng-container>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

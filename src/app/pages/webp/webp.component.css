@@ -1,0 +1,124 @@
+.webp-banner {
+  position: relative;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 1rem;
+}
+
+.webp-banner__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.webp-banner__text {
+  position: relative;
+  color: #fff;
+  padding: 1rem 2rem;
+}
+
+.webp-banner__text h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.webp-banner__text p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.webp-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+  gap: 1rem;
+}
+
+/* Estilos comunes de cada etapa */
+.stageLoad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stageConvert {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icon {
+  font-size: 4rem;
+}
+
+.icon.spin {
+  animation: spin 1s linear infinite;
+}
+
+.icon.success {
+  color: #4caf50;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  color: #d32f2f;
+}
+
+.info {
+  color: #555;
+}
+
+button {
+  min-width: 200px;
+}
+
+/* Barra de progreso */
+.progress-bar {
+  width: 250px;
+  height: 1rem;
+  border: 1px solid #333;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.2s ease;
+}
+
+.btn-color {
+  color: #fff !important;
+  background-color: black !important;
+}
+
+.webp-content__label {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.webp-content__slider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.webp-content__slider input[type="range"] {
+  flex: 1;
+  /* puedes añadir más estilos aquí */
+}
+
+.quality-label {
+  font-weight: 600;
+  width: 4rem;
+  text-align: right;
+}
