@@ -1,174 +1,120 @@
-/* TEXTO */
+/* ========================================================================
+   Custom Fonts
+   ======================================================================== */
+
+/* Helvetica Neue LT Std – Light (300) */
+@font-face {
+  font-family: "HelveticaNeueLight";
+  src: url("/assets/fonts/HelveticaNeueLTStd-LtEx.woff2") format("woff2"),
+    url("/assets/fonts/HelveticaNeueLTStd-LtEx.woff") format("woff"),
+    url("/assets/fonts/HelveticaNeueLTStd-43LightExtended.otf")
+      format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Helvetica Neue LT Std – Black (900) */
+@font-face {
+  font-family: "HelveticaNeueBlack";
+  src: url("/assets/fonts/HelveticaNeueLTStd-BlkEx.woff2") format("woff2"),
+    url("/assets/fonts/HelveticaNeueLTStd-BlkEx.woff") format("woff"),
+    url("/assets/fonts/HelveticaNeueLTStd-93BlackExtended.otf")
+      format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* URW DIN Arabic – Regular (400) */
+@font-face {
+  font-family: "URWDINArabic";
+  src: url("/assets/fonts/URWDINArabic-Regular.woff2") format("woff2"),
+    url("/assets/fonts/URWDINArabic-Regular.woff") format("woff"),
+    url("/assets/fonts/URWDINArabic-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* URW DIN Arabic – Medium (500) */
+@font-face {
+  font-family: "URWDINArabic";
+  src: url("/assets/fonts/URWDINArabic-Medium.woff2") format("woff2"),
+    url("/assets/fonts/URWDINArabic-Medium.woff") format("woff"),
+    url("/assets/fonts/URWDINArabic-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* URW DIN Arabic – Bold (700) */
+@font-face {
+  font-family: "URWDINArabic";
+  src: url("/assets/fonts/URWDINArabic-Bold.woff2") format("woff2"),
+    url("/assets/fonts/URWDINArabic-Bold.woff") format("woff"),
+    url("/assets/fonts/URWDINArabic-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* URW DIN Arabic – Black (900) */
+@font-face {
+  font-family: "URWDINArabic";
+  src: url("/assets/fonts/URWDINArabic-Black.woff2") format("woff2"),
+    url("/assets/fonts/URWDINArabic-Black.woff") format("woff"),
+    url("/assets/fonts/URWDINArabic-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ========================================================================
+   Global Styles
+   ======================================================================== */
+
+/* Ensure full-height layout if needed */
 html,
 body {
   height: 100%;
   margin: 0;
-  font-family: Inter, "Helvetica Neue", sans-serif !important;
 }
 
-h1 {
-  font-size: 24px;
-  margin: 0px;
+/* Base font for the entire site */
+body {
+  font-family: "URWDINArabic", sans-serif;
+  line-height: 1.5;
+  color: #333;
 }
 
-h2 {
-  font-size: 20px;
-  margin: 0px;
-}
-
+/* Headings use Helvetica Neue Light */
+h1,
+h2,
 h3 {
-  font-size: 18px;
-  margin: 0px;
+  font-family: "HelveticaNeueLight", Arial, sans-serif;
+  font-weight: 300;
+  margin: 0 0 0.5rem;
 }
 
-h4 {
-  font-size: 16px;
-  margin: 0px;
+/* Special header/title style in Black */
+.header-title {
+  font-family: "HelveticaNeueBlack", Arial, sans-serif;
+  font-weight: 900;
 }
 
-p {
-  font-size: 16px;
-  margin: 0px;
+/* ========================================================================
+   Optional Reset or Base Elements
+   ======================================================================== */
+
+/* Links inherit text color by default */
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-/* FONDOS */
-.bg-header {
-  background-color: var(--mat-color-header) !important;
-  color: var(--mat-color-header-contrast) !important;
+/* Images scale responsively */
+img {
+  max-width: 100%;
+  height: auto;
 }
-
-.bg-primary {
-  background-color: var(--mat-color-primary) !important;
-  color: var(--mat-color-primary-contrast) !important;
-}
-
-.bg-secondary {
-  background-color: var(--mat-color-secondary) !important;
-  color: var(--mat-color-secondary-contrast) !important;
-}
-
-.bg-success {
-  background-color: var(--mat-color-success) !important;
-  color: var(--mat-color-success-contrast) !important;
-}
-
-.bg-warning {
-  background-color: var(--mat-color-warning) !important;
-  color: var(--mat-color-warning-contrast) !important;
-}
-
-.bg-error {
-  background-color: var(--mat-color-error) !important;
-  color: var(--mat-color-error-contrast) !important;
-}
-
-.bg-gray {
-  background-color: var(--mat-color-gray) !important;
-  color: var(--mat-color-gray-contrast) !important;
-}
-
-/* COLORES */
-.c-primary {
-  color: var(--mat-color-primary);
-}
-
-.c-secondary {
-  color: var(--mat-color-secondary);
-}
-
-.c-error {
-  color: var(--mat-color-error);
-}
-
-/* MODALS - VENTANAS PUSH */
-.modal-message {
-  width: 450px;
-}
-
-.modal-message .mat-mdc-dialog-container .mdc-dialog__surface {
-  border-radius: 25px !important;
-}
-
-/* CLASES UTILITARIAS */
-.w-100 {
-  width: 100%;
-}
-
-.h-100 {
-  height: 100%;
-}
-
-.m-10 {
-  margin: 10px;
-}
-
-.my-10 {
-  margin-block: 10px;
-}
-
-.py-10 {
-  padding-block: 10px;
-}
-
-.center-x {
-  display: flex !important;
-  justify-content: center;
-}
-
-.center-xy {
-  display: flex !important;
-  align-items: center;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-end {
-  text-align: end;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-/* BOTONES */
-.btn-float.close {
-  position: relative !important;
-  z-index: 999 !important;
-}
-
-/* .banner {
-  position: relative;
-  width: 100%;
-  height: 300px;
-  background-image: url("/images/fondo2.png");
-  background-size: cover;
-  background-position: center;
-  overflow: hidden;
-  margin-bottom: 30px;
-} */
-
-/* .banner-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(13, 71, 161, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-} */
-
-/* .banner-overlay h1 {
-  color: white;
-  font-size: 32px;
-  font-weight: 700;
-  font-family: "Poppins", sans-serif;
-  text-align: center;
-  padding: 0 20px;
-} */
-
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

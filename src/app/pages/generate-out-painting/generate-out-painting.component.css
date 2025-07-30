@@ -48,6 +48,13 @@
   z-index: 1;
 }
 
+.action-bar button {
+  margin-right: 10px;
+}
+.action-bar button:last-child {
+  margin-right: 0;
+}
+
 /* Offsets dentro de la action-bar */
 .offsets {
   text-align: left;
@@ -84,4 +91,9 @@ footer {
   border-top: 1px solid #ccc;
   text-align: center;
   font-size: 0.8rem;
+}
+
+.btn-color {
+  color: #fff !important;
+  background-color: black !important;
 }

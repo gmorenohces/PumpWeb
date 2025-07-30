@@ -241,11 +241,20 @@ import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { DataService } from "../../services/data/data.service";
 import { Subscription } from "rxjs";
+import { MatButtonModule } from "@angular/material/button";
+import { MatInputModule } from "@angular/material/input";
+import { MatFormFieldModule } from "@angular/material/form-field";
 
 @Component({
   selector: "app-generate-out-painting",
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
+    MatInputModule,
+    MatFormFieldModule,
+  ],
   templateUrl: "./generate-out-painting.component.html",
   styleUrls: ["./generate-out-painting.component.css"],
 })
@@ -269,6 +278,7 @@ export class GenerateOutPaintingComponent implements AfterViewInit, OnDestroy {
 
   customWidth = 1024;
   customHeight = 1024;
+  bandProcess = 0;
 
   offsets = { left: 0, down: 0, right: 0, up: 0 };
   resultUrlROI = "";
@@ -427,7 +437,7 @@ export class GenerateOutPaintingComponent implements AfterViewInit, OnDestroy {
     const rctx = roiCanvas.getContext("2d")!;
     rctx.drawImage(this.img, sx, sy, sw, sh, 0, 0, sw, sh);
     this.resultUrlROI = roiCanvas.toDataURL("image/png");
-
+    this.bandProcess = 0;
     // TODO: enviar ROI al backend usando this.offsets
     // enviar ROI al backend usando this.offsets
     const form = new FormData();
@@ -439,23 +449,33 @@ export class GenerateOutPaintingComponent implements AfterViewInit, OnDestroy {
       form.append("right", right.toString());
       form.append("up", up.toString());
       form.append("output_format", "png");
-      // this.sub = this.dataService.outpaint(form).subscribe({
-      //   next: (b) => {
-      //     console.log("Outpaint result blob:", b);
-      //     this.resultUrlROI = URL.createObjectURL(b);
-      //   },
-      //   error: (e) => console.error("Outpaint error", e),
-      // });
+      this.sub = this.dataService.outpaint(form).subscribe({
+        next: (b) => {
+          console.log("Outpaint result blob:", b);
+          this.bandProcess = 1;
+          this.resultUrlROI = URL.createObjectURL(b);
+        },
+        error: (e) => console.error("Outpaint error", e),
+      });
     });
   }
   newProcess() {
     this.fileInput.nativeElement.value = "";
     //this.img.src = "";
+    this.bandProcess = 0;
     this.resultUrlROI = "";
     this.offsets = { left: 0, down: 0, right: 0, up: 0 };
     this.selectedRatio = this.ratios[0].value as [number, number];
     this.customWidth = 1024;
     this.customHeight = 1024;
     this.redraw();
+  }
+
+  download() {
+    if (!this.resultUrlROI) return;
+    const link = document.createElement("a");
+    link.href = this.resultUrlROI;
+    link.download = "roi.png";
+    link.click();
   }
 }

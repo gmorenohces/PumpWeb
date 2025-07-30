@@ -1,15 +1,6 @@
-.webp-banner {
-  position: relative;
-  width: 100%;
-  background-size: cover;
-  background-position: center;
-  margin-bottom: 1rem;
-}
-
-.webp-banner__overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+/* ===== Contenedor General ===== */
+.webp-container {
+  padding: 1rem;
 }
 
 .webp-banner__text {
@@ -28,97 +19,198 @@
   font-size: 1rem;
 }
 
-.webp-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem 1rem;
-  gap: 1rem;
+/* ===== Banner y Selección de Archivos ===== */
+.upload-section {
+  text-align: center;
+  margin-bottom: 1rem;
 }
-
-/* Estilos comunes de cada etapa */
-.stageLoad {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+.webp-banner {
+  width: 80%;
+  max-width: 70%;
+  display: block;
+  object-fit: cover;
+  margin: 0 auto 1rem;
 }
-
-.stageConvert {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.file-input {
+  /* Se ve como tu botón principal */
+  padding: 0.5rem 1rem;
+  margin: 0.5rem auto;
+  display: inline-block;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
 }
-
-.icon {
-  font-size: 4rem;
-}
-
-.icon.spin {
-  animation: spin 1s linear infinite;
-}
-
-.icon.success {
-  color: #4caf50;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.error {
-  color: #d32f2f;
-}
-
-.info {
-  color: #555;
-}
-
-button {
-  min-width: 200px;
-}
-
-/* Barra de progreso */
-.progress-bar {
-  width: 250px;
-  height: 1rem;
-  border: 1px solid #333;
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-
-.fill {
-  height: 100%;
-  background-color: #4caf50;
-  transition: width 0.2s ease;
-}
-
 .btn-color {
   color: #fff !important;
   background-color: black !important;
 }
 
-.webp-content__label {
-  font-size: 1.1rem;
-  margin-bottom: 1rem;
+/* ===== Ajustes (Scale & Quality) ===== */
+.settings-section {
+  max-width: 500px;
+  margin: 0 auto 2rem;
 }
-
 .webp-content__slider {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin: 1rem 0;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
-
 .webp-content__slider input[type="range"] {
   flex: 1;
-  /* puedes añadir más estilos aquí */
+}
+.quality-label {
+  width: 70px;
+  font-weight: 500;
+  text-align: right;
+}
+.value-label {
+  min-width: 40px;
+  text-align: right;
 }
 
-.quality-label {
-  font-weight: 600;
+/* ===== Botones de Acción ===== */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.result-buttons {
+  margin-top: 1.5rem;
+}
+
+/* ===== Barra de Progreso ===== */
+.processing-section {
+  max-width: 500px;
+  margin: 0 auto;
+  text-align: center;
+}
+.progress-text {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.viewers-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+/* ─── Cada bloque (original o procesado) ───────────────────── */
+.viewer-block {
+  text-align: center;
+}
+
+/* ─── El “marco” de visualización, siempre del mismo tamaño ── */
+.viewer-frame {
+  width: 640px;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  position: relative;
+  margin: 0 auto 0.5rem;
+}
+
+/* ─── El visor escalado – centrado en su marco ────────────── */
+.scaled-viewer {
+  /* El spin-viewer ocupa 100% del marco, pero aquí lo escalamos */
+  width: 100%;
+  height: 100%;
+  display: block; /* para que transform respete el box */
+}
+
+/* ===== Visor 360° ===== */
+.viewer {
+  /* ancho máximo para que no se salga de los laterales */
+  max-width: 1200px;
+  /* centrar horizontalmente */
+  margin: 0 auto;
+  /* mantiene tu layout responsive */
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.left,
+.right {
+  flex: 1 1 400px;
+  text-align: center;
+}
+.left h3,
+.right h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+/* ===== Mensaje de Error ===== */
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #b00020;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.dimension-fields {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+
+.dimension-fields label {
+  min-width: 50px;
+  font-weight: 500;
+}
+
+.dimension-fields input {
   width: 4rem;
-  text-align: right;
+  padding: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.preview-container {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.preview-image {
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+}
+
+.stageLoad {
+  /* elimina cualquier posicionamiento flotante previo */
+  clear: both;
+  /* separa un poco del banner */
+  margin-top: 2rem;
+  /* centrar todo el bloque horizontalmente */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===== (Opcional) Iconos y Animaciones ===== */
+.icon.spin {
+  animation: spin 1s linear infinite;
+}
+.icon.success {
+  color: #4caf50;
+}
+.error {
+  color: #d32f2f;
+}
+.info {
+  color: #555;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -1,4 +1,4 @@
-<!-- Banner full-width -->
+<!-- Banner full-width
 <div
   class="webp-banner"
   [ngStyle]="{
@@ -17,7 +17,7 @@
 </div>
 
 <section class="webp-content">
-  <!-- input oculto -->
+
   <input
     #fileInput
     type="file"
@@ -27,7 +27,7 @@
     (change)="onFilesSelected($event)"
   />
 
-  <!-- ETAPA 1: solo CARGAR -->
+ 
   <div *ngIf="step === 'select'" class="stageLoad">
     <img src="/images/bgLoad.png" class="icon" />
     <p class="webp-content__label">Carga máximo 50 imágenes para convertir</p>
@@ -36,7 +36,7 @@
     </button>
   </div>
 
-  <!-- ETAPA 2: CANCELAR / CONVERTIR -->
+  
   <div *ngIf="step === 'ready'" class="stageLoad">
     <img src="/images/check_webp.png" class="icon" />
     <p class="webp-content__label">
@@ -62,14 +62,14 @@
     </button>
   </div>
 
-  <!-- ETAPA 3: Procesando -->
+  
   <section class="webp-content" *ngIf="step === 'processing'">
     <img src="/images/loading_webp.png" class="icon" />
     <p class="webp-content__label">Procesando… {{ progress }}%</p>
     <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
   </section>
 
-  <!-- ETAPA 4: TERMINADO -->
+  
   <div *ngIf="step === 'done'" class="stageLoad">
     <img src="/images/loading_webp.png" class="icon" />
   </div>
@@ -82,6 +82,138 @@
     </button>
   </div>
 
-  <!-- Mensaje de error global -->
+  
   <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-</section>
+</section> -->
+
+<!-- webp.component.html -->
+<div class="webp-container">
+  <div
+    class="webp-banner"
+    [ngStyle]="{
+      'background-image': 'url(' + bannerUrl + ')',
+      'height.px': bannerHeight
+    }"
+  >
+    <div class="webp-banner__overlay"></div>
+    <div class="webp-banner__text">
+      <h2>CONVERSIÓN DE IMÁGENES</h2>
+      <p>
+        Carga tus imágenes en formato PNG o JPG y conviértelas a un formato más
+        liviano WEBP
+      </p>
+    </div>
+  </div>
+  <!-- 1) Selección de archivos -->
+  <div class="upload-section">
+    <input
+      #fileInput
+      type="file"
+      accept="image/png, image/jpeg"
+      multiple
+      hidden
+      (change)="onFilesSelected($event)"
+    />
+
+    <div *ngIf="step === 'select'" class="stageLoad">
+      <img src="/images/bgLoad.png" class="icon" />
+      <p class="webp-content__label">
+        Carga las imágenes en formato png o jpg para convertir
+      </p>
+      <button mat-raised-button class="btn-color" (click)="fileInput.click()">
+        CARGAR
+      </button>
+    </div>
+  </div>
+
+  <!-- 2) Ajustes de escala y calidad -->
+  <div *ngIf="step === 'ready'" class="settings-section">
+    <!-- Preview centrada si quieres (opcional) -->
+    <div *ngIf="original360Urls.length" class="preview-container">
+      <img
+        [src]="original360Urls[0]"
+        alt="Vista previa"
+        class="preview-image"
+      />
+    </div>
+
+    <!-- Slider de escala -->
+    <div class="webp-content__slider">
+      <label class="quality-label">Escala:</label>
+      <input type="range" min="0.1" max="3" step="0.05" [(ngModel)]="scale" />
+      <span class="value-label">{{ scale | number : "1.2-2" }}×</span>
+    </div>
+
+    <!-- ✨ NUEVO: campos de dimensión -->
+    <div class="dimension-fields">
+      <label>Ancho:</label>
+      <input type="text" [value]="scaledWidth" readonly />
+      <label>Alto:</label>
+      <input type="text" [value]="scaledHeight" readonly />
+    </div>
+
+    <!-- Slider de calidad -->
+    <div class="webp-content__slider">
+      <label class="quality-label">Calidad:</label>
+      <input type="range" min="0.1" max="1" step="0.1" [(ngModel)]="quality" />
+      <span class="value-label">{{ quality * 100 | number : "1.0-0" }} %</span>
+    </div>
+
+    <!-- Botones -->
+    <div class="action-buttons">
+      <button
+        mat-raised-button
+        class="btn-color"
+        (click)="uploadFiles()"
+        [disabled]="!canConvert"
+      >
+        Convertir Imágenes
+      </button>
+      <button mat-button (click)="cancelSelection()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- 3) Progreso de procesamiento -->
+  <div *ngIf="step === 'processing'" class="processing-section">
+    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+    <p class="progress-text">{{ progress }}%</p>
+  </div>
+
+  <!-- 4) Resultado: visores 360° -->
+  <div *ngIf="step === 'done'" class="stageLoad">
+    <div class="viewers-container">
+      <div class="viewer-block">
+        <h3>Original 360° (x1.00)</h3>
+        <div class="viewer-frame">
+          <app-spin-viewer [images]="original360Urls"></app-spin-viewer>
+        </div>
+      </div>
+
+      <div class="viewer-block">
+        <h3>Procesado 360° (x{{ scale | number : "1.2-2" }})</h3>
+        <div class="viewer-frame">
+          <app-spin-viewer
+            [images]="processed360Urls"
+            class="scaled-viewer"
+            [ngStyle]="{
+              'transform-origin': 'center center'
+            }"
+          ></app-spin-viewer>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons result-buttons">
+      <button mat-raised-button color="accent" (click)="download()">
+        Descargar Todas
+      </button>
+      <button mat-button (click)="reset()">Procesar Nuevas</button>
+    </div>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div *ngIf="errorMessage" class="error-message">
+    <mat-icon>error</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+</div>

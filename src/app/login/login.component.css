@@ -30,7 +30,6 @@
 }
 
 .login-wrapper .login-right .login-brand .brand-title {
-  font-family: "Roboto", sans-serif;
   font-size: 3rem;
   font-weight: 700;
   margin: 0;
@@ -39,7 +38,6 @@
 
 .login-wrapper .login-right .login-brand .brand-subtitle {
   margin: 0.5rem 0 0;
-  font-family: "Roboto", sans-serif;
   font-size: 1rem;
   color: #555;
   line-height: 1.4;

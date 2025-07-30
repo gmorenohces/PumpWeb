@@ -12,6 +12,7 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "esModuleInterop": true,
+    "typeRoots": ["node_modules/@types", "src/typings.d.ts"],
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "declaration": false,
@@ -22,6 +23,7 @@
     "module": "ES2022",
     "lib": ["ES2022", "dom"]
   },
+  "include": ["src/**/*", "src/typings.d.ts"],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
