@@ -1,91 +1,3 @@
-<!-- Banner full-width
-<div
-  class="webp-banner"
-  [ngStyle]="{
-    'background-image': 'url(' + bannerUrl + ')',
-    'height.px': bannerHeight
-  }"
->
-  <div class="webp-banner__overlay"></div>
-  <div class="webp-banner__text">
-    <h2>CONVERSIÓN DE IMÁGENES</h2>
-    <p>
-      Carga tus imágenes en formato PNG o JPG y conviértelas a un formato más
-      liviano WEBP
-    </p>
-  </div>
-</div>
-
-<section class="webp-content">
-
-  <input
-    #fileInput
-    type="file"
-    accept="image/png, image/jpeg"
-    multiple
-    hidden
-    (change)="onFilesSelected($event)"
-  />
-
- 
-  <div *ngIf="step === 'select'" class="stageLoad">
-    <img src="/images/bgLoad.png" class="icon" />
-    <p class="webp-content__label">Carga máximo 50 imágenes para convertir</p>
-    <button mat-raised-button class="btn-color" (click)="fileInput.click()">
-      CARGAR
-    </button>
-  </div>
-
-  
-  <div *ngIf="step === 'ready'" class="stageLoad">
-    <img src="/images/check_webp.png" class="icon" />
-    <p class="webp-content__label">
-      {{ selectedFiles.length }} imagen{{
-        selectedFiles.length > 1 ? "es" : ""
-      }}
-      cargada{{ selectedFiles.length > 1 ? "s" : "" }} con éxito. Inicia el
-      proceso de conversión.
-    </p>
-  </div>
-
-  <div *ngIf="step === 'ready'" class="stageConvert">
-    <button mat-raised-button class="btn-color" (click)="cancelSelection()">
-      CANCELAR
-    </button>
-    <button
-      mat-raised-button
-      class="btn-color"
-      [disabled]="!canConvert"
-      (click)="uploadFiles()"
-    >
-      CONVERTIR
-    </button>
-  </div>
-
-  
-  <section class="webp-content" *ngIf="step === 'processing'">
-    <img src="/images/loading_webp.png" class="icon" />
-    <p class="webp-content__label">Procesando… {{ progress }}%</p>
-    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
-  </section>
-
-  
-  <div *ngIf="step === 'done'" class="stageLoad">
-    <img src="/images/loading_webp.png" class="icon" />
-  </div>
-  <div *ngIf="step === 'done'" class="stageConvert">
-    <button mat-raised-button class="btn-color" (click)="reset()">
-      FINALIZAR
-    </button>
-    <button mat-raised-button class="btn-color" (click)="download()">
-      DESCARGAR
-    </button>
-  </div>
-
-  
-  <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-</section> -->
-
 <!-- webp.component.html -->
 <div class="webp-container">
   <div
@@ -104,8 +16,105 @@
       </p>
     </div>
   </div>
+  <!-- 0) Imagen de referencia -->
+  <div *ngIf="step === 'reference'" class="settings-section">
+    <div class="select_reference">
+      <p>1. Subir imagen de referencia (frontal) para recorte:</p>
+      <input
+        #refInput
+        type="file"
+        accept="image/png, image/jpeg"
+        hidden
+        (change)="onReferenceSelected($event)"
+      />
+      <button mat-raised-button (click)="refInput.click()">Seleccionar</button>
+    </div>
+    <div *ngIf="referenceUrl" class="preview-container">
+      <!-- Preview original -->
+      <div>
+        <strong>Original:</strong><br />
+        <img [src]="referenceUrl" class="preview-image" />
+      </div>
+
+      <!-- Preview recortado -->
+      <div *ngIf="croppedUrl">
+        <strong>Recortado:</strong><br />
+        <img [src]="croppedUrl" class="preview-image" />
+      </div>
+    </div>
+
+    <!-- Campos de recorte con cambio dinámico -->
+    <div *ngIf="referenceUrl" class="dimension-fields">
+      <label
+        >Superior:
+        <input
+          type="number"
+          [(ngModel)]="cropTop"
+          (ngModelChange)="onCropChange()"
+          min="10"
+          max="50"
+        />
+      </label>
+      <label
+        >Inferior:
+        <input
+          type="number"
+          [(ngModel)]="cropBottom"
+          (ngModelChange)="onCropChange()"
+          min="10"
+          max="50"
+        />
+      </label>
+      <label
+        >Izquierda:
+        <input
+          type="number"
+          [(ngModel)]="cropLeft"
+          (ngModelChange)="onCropChange()"
+          min="10"
+          max="50"
+        />
+      </label>
+      <label
+        >Derecha:
+        <input
+          type="number"
+          [(ngModel)]="cropRight"
+          (ngModelChange)="onCropChange()"
+          min="10"
+          max="50"
+        />
+      </label>
+      <label>
+        Margen (px):
+        <input
+          type="number"
+          [(ngModel)]="userPadding"
+          (ngModelChange)="onPaddingChange()"
+          min="50"
+          max="200"
+        />
+      </label>
+    </div>
+    <div>
+      <div class="action-buttons">
+        <button mat-button class="btn-color" (click)="skipReference()">
+          Omitir
+        </button>
+        <button
+          mat-raised-button
+          class="btn-color"
+          [disabled]="!referenceUrl"
+          (click)="confirmReference()"
+        >
+          Continuar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- 1) Selección de archivos -->
-  <div class="upload-section">
+  <div *ngIf="step === 'select'" class="upload-section">
     <input
       #fileInput
       type="file"
@@ -140,7 +149,14 @@
     <!-- Slider de escala -->
     <div class="webp-content__slider">
       <label class="quality-label">Escala:</label>
-      <input type="range" min="0.1" max="3" step="0.05" [(ngModel)]="scale" />
+      <input
+        type="range"
+        min="0.1"
+        max="3"
+        step="0.05"
+        [(ngModel)]="scale"
+        (ngModelChange)="onScaleChange()"
+      />
       <span class="value-label">{{ scale | number : "1.2-2" }}×</span>
     </div>
 
@@ -150,12 +166,21 @@
       <input type="text" [value]="scaledWidth" readonly />
       <label>Alto:</label>
       <input type="text" [value]="scaledHeight" readonly />
+      <label>Peso aprox.:</label>
+      <input type="text" [value]="formattedMaxEstimatedSize" readonly />
     </div>
 
     <!-- Slider de calidad -->
     <div class="webp-content__slider">
       <label class="quality-label">Calidad:</label>
-      <input type="range" min="0.1" max="1" step="0.1" [(ngModel)]="quality" />
+      <input
+        type="range"
+        min="0.1"
+        max="1"
+        step="0.1"
+        [(ngModel)]="quality"
+        (ngModelChange)="onQualityChange()"
+      />
       <span class="value-label">{{ quality * 100 | number : "1.0-0" }} %</span>
     </div>
 
