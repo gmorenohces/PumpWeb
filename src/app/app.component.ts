@@ -25,9 +25,9 @@ export class AppComponent {
   links: Link[] = [
     { path: "/home", label: "INICIO" },
     { path: "/webp", label: "WEBP" },
-    { path: "/generateImages", label: "IMAGEN" },
-    { path: "/chat", label: "CHAT" },
+    // { path: "/generateImages", label: "IMAGEN" },
+    // { path: "/chat", label: "CHAT" },
     { path: "/ads", label: "ADS" },
-    { path: "/format", label: "FORMATOS" },
+    // { path: "/format", label: "FORMATOS" },
   ];
 }
