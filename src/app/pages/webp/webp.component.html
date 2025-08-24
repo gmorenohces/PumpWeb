@@ -32,20 +32,20 @@
     <div *ngIf="referenceUrl" class="preview-container">
       <!-- Preview original -->
       <div>
-        <strong>Original:</strong><br />
+        <strong>Margen Original:</strong><br />
         <img [src]="referenceUrl" class="preview-image" />
       </div>
 
       <!-- Preview recortado -->
       <div *ngIf="croppedUrl">
-        <strong>Recortado:</strong><br />
+        <strong>Margen Recortado:</strong><br />
         <img [src]="croppedUrl" class="preview-image" />
       </div>
     </div>
 
     <!-- Campos de recorte con cambio dinámico -->
     <div *ngIf="referenceUrl" class="dimension-fields">
-      <label
+      <!-- <label
         >Superior:
         <input
           type="number"
@@ -84,7 +84,7 @@
           min="10"
           max="50"
         />
-      </label>
+      </label> -->
       <label>
         Margen (px):
         <input
@@ -138,16 +138,35 @@
   <!-- 2) Ajustes de escala y calidad -->
   <div *ngIf="step === 'ready'" class="settings-section">
     <!-- Preview centrada si quieres (opcional) -->
-    <div *ngIf="original360Urls.length" class="preview-container">
+    <!-- <div *ngIf="original360Urls.length" class="preview-container">
       <img
         [src]="original360Urls[0]"
         alt="Vista previa"
         class="preview-image"
       />
+    </div> -->
+
+    <!-- Vista previa dinámica de UNA imagen procesada -->
+    <div
+      class="preview-container-scaled"
+      *ngIf="previewUrl || originalPreviewUrl"
+    >
+      <div class="viewer-block">
+        <strong>Original:</strong><br />
+        <img [src]="originalPreviewUrl" class="preview-image" />
+      </div>
+
+      <div class="viewer-block" *ngIf="previewUrl">
+        <strong
+          >Vista previa (x{{ scale | number : "1.2-2" }},
+          {{ quality * 100 | number : "1.0-0" }}%)</strong
+        ><br />
+        <img [src]="previewUrl" class="preview-image" />
+      </div>
     </div>
 
     <!-- Slider de escala -->
-    <div class="webp-content__slider">
+    <!-- <div class="webp-content__slider">
       <label class="quality-label">Escala:</label>
       <input
         type="range"
@@ -158,14 +177,32 @@
         (ngModelChange)="onScaleChange()"
       />
       <span class="value-label">{{ scale | number : "1.2-2" }}×</span>
-    </div>
+    </div> -->
 
     <!-- ✨ NUEVO: campos de dimensión -->
+    <!-- <div class="dimension-fields">
+      <label>Ancho:</label>
+      <input type="text" [value]="scaledWidth"/>
+      <label>Alto:</label>
+      <input type="text" [value]="scaledHeight"/>
+      <label>Peso aprox.:</label>
+      <input type="text" [value]="formattedMaxEstimatedSize" readonly />
+    </div> -->
     <div class="dimension-fields">
       <label>Ancho:</label>
-      <input type="text" [value]="scaledWidth" readonly />
+      <input
+        type="number"
+        min="1"
+        [(ngModel)]="scaledWidth"
+        (ngModelChange)="onWidthInput($event)"
+      />
       <label>Alto:</label>
-      <input type="text" [value]="scaledHeight" readonly />
+      <input
+        type="number"
+        min="1"
+        [(ngModel)]="scaledHeight"
+        (ngModelChange)="onHeightInput($event)"
+      />
       <label>Peso aprox.:</label>
       <input type="text" [value]="formattedMaxEstimatedSize" readonly />
     </div>
