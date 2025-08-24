@@ -13,6 +13,7 @@ import { ConvertService } from "../../services/convert/convert.service";
 
 import { SpinViewerComponent } from "../../shared/spin-viewer/spin-viewer.component";
 import pica from "pica";
+import { debounceTime, Subject } from "rxjs";
 
 // type Step = "select" | "ready" | "processing" | "done";
 type Step = "reference" | "select" | "ready" | "processing" | "done";
@@ -61,11 +62,16 @@ export class WebpComponent {
 
   originalWidth = 0;
   originalHeight = 0;
+  private aspectRatio = 1;
 
   // Parámetros de entrada
   selectedFiles: File[] = [];
   quality = 0.9; // compresión WebP [0.1–1]
   scale = 1.0; // factor de reescalado [0.5–3]
+
+  // NUEVO: Propiedades para binding de inputs
+  scaledWidthTxt = 0;
+  scaledHeightTxt = 0;
 
   maxEstimatedSize = 0;
 
@@ -77,7 +83,24 @@ export class WebpComponent {
   original360Urls: string[] = [];
   processed360Urls: string[] = [];
 
+  previewUrl: string | null = null; // blob URL de la imagen WEBP generada
+  originalPreviewUrl: string | null = null; // la fuente original que estamos previsualizando
+
+  private _lastPreviewUrl: string | null = null; // para liberar blobs previos
+  private previewTrigger$ = new Subject<void>(); // debounce de regeneración
+
   constructor(private convertService: ConvertService) {}
+
+  ngOnInit() {
+    // Debounce para no recalcular en cada “tick” del slider
+    this.previewTrigger$.pipe(debounceTime(200)).subscribe(() => {
+      this.generatePreview().catch(console.error);
+    });
+  }
+
+  private schedulePreviewUpdate() {
+    this.previewTrigger$.next();
+  }
 
   get scaledWidth(): number {
     return Math.round(this.originalWidth * this.scale);
@@ -86,12 +109,34 @@ export class WebpComponent {
     return Math.round(this.originalHeight * this.scale);
   }
 
+  // ✨ NUEVO: Handler para cuando se edita el ancho
+  onWidthInput(newWidth: number): void {
+    if (this.originalWidth > 0 && newWidth > 0) {
+      this.scale = newWidth / this.originalWidth;
+      this.scaledHeightTxt = Math.round(newWidth / this.aspectRatio);
+      this.updateEstimates();
+      this.schedulePreviewUpdate();
+    }
+  }
+
+  // ✨ NUEVO: Handler para cuando se edita el alto
+  onHeightInput(newHeight: number): void {
+    if (this.originalHeight > 0 && newHeight > 0) {
+      this.scale = newHeight / this.originalHeight;
+      this.scaledWidthTxt = Math.round(newHeight * this.aspectRatio);
+      this.updateEstimates();
+      this.schedulePreviewUpdate();
+    }
+  }
+
   onScaleChange(): void {
     this.updateEstimates();
+    this.schedulePreviewUpdate();
   }
 
   onQualityChange(): void {
     this.updateEstimates();
+    this.schedulePreviewUpdate();
   }
 
   /** Se dispara al cargar la imagen de referencia */
@@ -332,6 +377,7 @@ export class WebpComponent {
     this.convertedBlobs = [];
     this.processed360Urls = [];
     this.updateEstimates();
+    this.schedulePreviewUpdate();
     this.step = "ready";
   }
 
@@ -447,5 +493,116 @@ export class WebpComponent {
     //this.fileInput.nativeElement.value = "";
     //this.refInput.nativeElement.value = "";
     this.step = "reference";
+  }
+
+  private async generatePreview(): Promise<void> {
+    try {
+      const sourceUrl =
+        this.croppedUrl ||
+        (this.original360Urls && this.original360Urls[0]) ||
+        this.referenceUrl;
+
+      if (!sourceUrl) {
+        // no hay nada que previsualizar
+        this.setPreview(null, null);
+        return;
+      }
+
+      // Guarda qué original estamos mostrando (útil para el bloque "Original")
+      this.originalPreviewUrl = sourceUrl;
+
+      // Carga la imagen fuente
+      const { bitmap, width, height } = await this.loadImage(sourceUrl);
+
+      // Calcula dimensiones destino según this.scale
+      const targetW = Math.max(1, Math.round(width * (this.scale || 1)));
+      const targetH = Math.max(1, Math.round(height * (this.scale || 1)));
+
+      // Dibuja en canvas y codifica a WEBP con this.quality
+      const blob = await this.rasterToWebp(
+        bitmap,
+        targetW,
+        targetH,
+        this.quality || 0.8
+      );
+      const url = URL.createObjectURL(blob);
+
+      this.setPreview(url, this._lastPreviewUrl);
+      this._lastPreviewUrl = url;
+    } catch (err) {
+      console.error("preview error", err);
+      this.setPreview(null, this._lastPreviewUrl);
+      this._lastPreviewUrl = null;
+    }
+  }
+
+  private setPreview(newUrl: string | null, oldUrl: string | null) {
+    this.previewUrl = newUrl;
+    if (oldUrl) {
+      // libera blob anterior para evitar fugas
+      URL.revokeObjectURL(oldUrl);
+    }
+  }
+
+  // Utilidad: cargar imagen como ImageBitmap si está disponible
+  private async loadImage(src: string): Promise<{
+    bitmap: ImageBitmap | HTMLImageElement;
+    width: number;
+    height: number;
+  }> {
+    // Si es un objectURL/dataURL/local, un <img> funciona bien
+    // Usamos createImageBitmap si está soportado para performance
+    const supportsBitmap = "createImageBitmap" in window;
+
+    if (supportsBitmap) {
+      const res = await fetch(src);
+      const blob = await res.blob();
+      const bitmap = await createImageBitmap(blob);
+      return { bitmap, width: bitmap.width, height: bitmap.height };
+    } else {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        // si la fuente no es cross-origin, esto no afecta
+        image.crossOrigin = "anonymous";
+        image.src = src;
+      });
+      return {
+        bitmap: img,
+        width: img.naturalWidth || img.width,
+        height: img.naturalHeight || img.height,
+      };
+    }
+  }
+
+  private rasterToWebp(
+    bitmap: ImageBitmap | HTMLImageElement,
+    w: number,
+    h: number,
+    q: number
+  ): Promise<Blob> {
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(bitmap as any, 0, 0, w, h);
+
+    return new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("WEBP encoding failed"))),
+        "image/webp",
+        Math.min(Math.max(q, 0.05), 1) // clamp 0.05..1 para evitar artefactos extremos
+      );
+    });
+  }
+
+  // Limpieza al destruir
+  ngOnDestroy() {
+    if (this._lastPreviewUrl) {
+      URL.revokeObjectURL(this._lastPreviewUrl);
+      this._lastPreviewUrl = null;
+    }
+    this.previewTrigger$.complete();
   }
 }
