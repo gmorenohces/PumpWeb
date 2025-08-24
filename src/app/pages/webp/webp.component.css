@@ -107,6 +107,8 @@
 /* ─── El “marco” de visualización, siempre del mismo tamaño ── */
 .viewer-frame {
   width: 640px;
+  max-width: 100%;
+  aspect-ratio: var(--ratio, 16/9);
   border: 1px solid #ddd;
   overflow: hidden;
   position: relative;
@@ -182,6 +184,14 @@
   text-align: center;
   margin-bottom: 0.5rem;
 }
+
+.preview-container-scaled {
+  justify-content: space-around;
+  gap: 10px;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
 .preview-image {
   max-width: 400px;
   width: 100%;
