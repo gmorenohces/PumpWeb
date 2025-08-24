@@ -2,5 +2,5 @@
 
 export const environment = {
   production: true,
-  apiUrl: "https://pumpia.duckdns.org",
+  apiUrl: '/api',
 };
