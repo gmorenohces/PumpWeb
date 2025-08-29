@@ -1,0 +1,123 @@
+.webp-container {
+  padding: 1rem;
+}
+
+.webp-banner {
+  width: 80%;
+  max-width: 70%;
+  display: block;
+  position: relative;
+  object-fit: cover;
+  margin: 0 auto 1rem;
+}
+
+.webp-banner__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.webp-banner__text {
+  position: relative;
+  color: #fff;
+  padding: 1rem 2rem;
+  z-index: 1;
+}
+
+.webp-banner__text h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+  z-index: 1;
+}
+
+.webp-banner__text p {
+  margin: 0;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.settings-section {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+}
+
+.select_reference {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.preview-container {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.preview-image {
+  max-width: 480px;
+  width: 100%;
+  height: auto;
+}
+
+.btn-color {
+  color: #fff !important;
+  background-color: black !important;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dimension-fields {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.format-buttons {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 1.5rem;
+}
+
+.preview-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+.thumb {
+  flex: 1 1 0;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fafafa;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+.thumb img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+.thumb figcaption {
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  color: #444;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.mini-remove {
+  border: 0;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #eee;
+  cursor: pointer;
+}

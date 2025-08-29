@@ -83,6 +83,8 @@ export class WebpComponent {
   original360Urls: string[] = [];
   processed360Urls: string[] = [];
 
+  keepAspectRatio = false;
+
   previewUrl: string | null = null; // blob URL de la imagen WEBP generada
   originalPreviewUrl: string | null = null; // la fuente original que estamos previsualizando
 
@@ -109,23 +111,41 @@ export class WebpComponent {
     return Math.round(this.originalHeight * this.scale);
   }
 
-  // ✨ NUEVO: Handler para cuando se edita el ancho
   onWidthInput(newWidth: number): void {
     if (this.originalWidth > 0 && newWidth > 0) {
+      this.scaledWidthTxt = newWidth;
+      console.log("onWidthInput: newWidth =", newWidth);
+
+      if (this.keepAspectRatio && this.aspectRatio > 0) {
+        this.scaledHeightTxt = Math.round(newWidth / this.aspectRatio);
+      }
+
+      // actualiza scale con base en el ancho
       this.scale = newWidth / this.originalWidth;
-      this.scaledHeightTxt = Math.round(newWidth / this.aspectRatio);
-      this.updateEstimates();
-      this.schedulePreviewUpdate();
+      console.log("onWidthInput: scale =", this.scale);
+      // ver height
+      console.log("onWidthInput: height =", this.scaledHeightTxt);
+
+      this.updateEstimates?.();
+      this.schedulePreviewUpdate?.();
     }
   }
 
-  // ✨ NUEVO: Handler para cuando se edita el alto
   onHeightInput(newHeight: number): void {
     if (this.originalHeight > 0 && newHeight > 0) {
+      this.scaledHeightTxt = newHeight;
+      console.log("onHeightInput: newHeight =", newHeight);
+      if (this.keepAspectRatio && this.aspectRatio > 0) {
+        this.scaledWidthTxt = Math.round(newHeight * this.aspectRatio);
+      }
+
+      // actualiza scale con base en el alto
       this.scale = newHeight / this.originalHeight;
-      this.scaledWidthTxt = Math.round(newHeight * this.aspectRatio);
-      this.updateEstimates();
-      this.schedulePreviewUpdate();
+      console.log("onHeightInput: scale =", this.scale);
+      // ver width
+      console.log("onHeightInput: width =", this.scaledWidthTxt);
+      this.updateEstimates?.();
+      this.schedulePreviewUpdate?.();
     }
   }
 
@@ -332,9 +352,19 @@ export class WebpComponent {
     srcCanvas.getContext("2d")!.drawImage(img, cx, cy, cw, ch, 0, 0, cw, ch);
 
     // 4) canvas destino escalado
+    // const destCanvas = document.createElement("canvas");
+    // destCanvas.width = Math.round(cw * this.scale);
+    // destCanvas.height = Math.round(ch * this.scale);
     const destCanvas = document.createElement("canvas");
-    destCanvas.width = Math.round(cw * this.scale);
-    destCanvas.height = Math.round(ch * this.scale);
+    if (this.keepAspectRatio) {
+      // Bloqueado: mantener proporción con 'scale'
+      destCanvas.width = Math.max(1, Math.round(cw * this.scale));
+      destCanvas.height = Math.max(1, Math.round(ch * this.scale));
+    } else {
+      // Libre: usar exactamente lo que escribe el usuario
+      destCanvas.width = Math.max(1, Math.round(this.scaledWidthTxt));
+      destCanvas.height = Math.max(1, Math.round(this.scaledHeightTxt));
+    }
 
     // 5) pica resize
     await pica().resize(srcCanvas, destCanvas);
@@ -371,6 +401,10 @@ export class WebpComponent {
     imgEl.onload = () => {
       this.originalWidth = imgEl.naturalWidth;
       this.originalHeight = imgEl.naturalHeight;
+      this.aspectRatio = this.originalWidth / this.originalHeight;
+
+      this.scaledWidthTxt = this.originalWidth;
+      this.scaledHeightTxt = this.originalHeight;
     };
     imgEl.src = URL.createObjectURL(firstFile);
 
@@ -515,8 +549,9 @@ export class WebpComponent {
       const { bitmap, width, height } = await this.loadImage(sourceUrl);
 
       // Calcula dimensiones destino según this.scale
-      const targetW = Math.max(1, Math.round(width * (this.scale || 1)));
-      const targetH = Math.max(1, Math.round(height * (this.scale || 1)));
+      // const targetW = Math.max(1, Math.round(width * (this.scale || 1)));
+      // const targetH = Math.max(1, Math.round(height * (this.scale || 1)));
+      const { w: targetW, h: targetH } = this.computeTargetDims();
 
       // Dibuja en canvas y codifica a WEBP con this.quality
       const blob = await this.rasterToWebp(
@@ -595,6 +630,19 @@ export class WebpComponent {
         Math.min(Math.max(q, 0.05), 1) // clamp 0.05..1 para evitar artefactos extremos
       );
     });
+  }
+
+  private computeTargetDims(): { w: number; h: number } {
+    if (this.keepAspectRatio) {
+      // BLOQUEADO → usa scale con proporción original
+      const w = Math.round(this.originalWidth * this.scale);
+      const h = Math.round(this.originalHeight * this.scale);
+      return { w: Math.max(1, w), h: Math.max(1, h) };
+    }
+    // LIBRE → usa lo que escribe el usuario
+    const w = Math.round(this.scaledWidthTxt || 0);
+    const h = Math.round(this.scaledHeightTxt || 0);
+    return { w: Math.max(1, w), h: Math.max(1, h) };
   }
 
   // Limpieza al destruir

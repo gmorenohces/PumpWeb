@@ -137,15 +137,6 @@
 
   <!-- 2) Ajustes de escala y calidad -->
   <div *ngIf="step === 'ready'" class="settings-section">
-    <!-- Preview centrada si quieres (opcional) -->
-    <!-- <div *ngIf="original360Urls.length" class="preview-container">
-      <img
-        [src]="original360Urls[0]"
-        alt="Vista previa"
-        class="preview-image"
-      />
-    </div> -->
-
     <!-- Vista previa dinámica de UNA imagen procesada -->
     <div
       class="preview-container-scaled"
@@ -189,18 +180,25 @@
       <input type="text" [value]="formattedMaxEstimatedSize" readonly />
     </div> -->
     <div class="dimension-fields">
+      <label>
+        <input type="checkbox" [(ngModel)]="keepAspectRatio" />
+        Mantener relación de aspecto
+      </label>
+    </div>
+
+    <div class="dimension-fields">
       <label>Ancho:</label>
       <input
         type="number"
         min="1"
-        [(ngModel)]="scaledWidth"
+        [(ngModel)]="scaledWidthTxt"
         (ngModelChange)="onWidthInput($event)"
       />
       <label>Alto:</label>
       <input
         type="number"
         min="1"
-        [(ngModel)]="scaledHeight"
+        [(ngModel)]="scaledHeightTxt"
         (ngModelChange)="onHeightInput($event)"
       />
       <label>Peso aprox.:</label>
@@ -243,26 +241,20 @@
 
   <!-- 4) Resultado: visores 360° -->
   <div *ngIf="step === 'done'" class="stageLoad">
-    <div class="viewers-container">
-      <div class="viewer-block">
-        <h3>Original 360° (x1.00)</h3>
-        <div class="viewer-frame">
-          <app-spin-viewer [images]="original360Urls"></app-spin-viewer>
-        </div>
-      </div>
+    <div class="viewer-frame">
+      <app-spin-viewer
+        [images]="original360Urls"
+        style="width: 100%; height: 100%"
+      ></app-spin-viewer>
+    </div>
 
-      <div class="viewer-block">
-        <h3>Procesado 360° (x{{ scale | number : "1.2-2" }})</h3>
-        <div class="viewer-frame">
-          <app-spin-viewer
-            [images]="processed360Urls"
-            class="scaled-viewer"
-            [ngStyle]="{
-              'transform-origin': 'center center'
-            }"
-          ></app-spin-viewer>
-        </div>
-      </div>
+    <div class="viewer-frame">
+      <app-spin-viewer
+        [images]="processed360Urls"
+        class="scaled-viewer"
+        style="width: 100%; height: 100%"
+      >
+      </app-spin-viewer>
     </div>
 
     <div class="action-buttons result-buttons">
