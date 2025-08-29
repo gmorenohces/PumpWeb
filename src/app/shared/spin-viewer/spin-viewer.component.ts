@@ -16,7 +16,6 @@ import { CommonModule } from "@angular/common";
     `
       .spin-container {
         width: 640px;
-        // height: 400px;
         overflow: hidden;
         position: relative;
         cursor: grab;

@@ -103,8 +103,6 @@
 .viewer-block {
   text-align: center;
 }
-
-/* ─── El “marco” de visualización, siempre del mismo tamaño ── */
 .viewer-frame {
   width: 640px;
   max-width: 100%;
@@ -114,7 +112,14 @@
   position: relative;
   margin: 0 auto 0.5rem;
 }
-
+.viewer {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 /* ─── El visor escalado – centrado en su marco ────────────── */
 .scaled-viewer {
   /* El spin-viewer ocupa 100% del marco, pero aquí lo escalamos */
@@ -124,17 +129,14 @@
 }
 
 /* ===== Visor 360° ===== */
-.viewer {
-  /* ancho máximo para que no se salga de los laterales */
+/* .viewer {
   max-width: 1200px;
-  /* centrar horizontalmente */
   margin: 0 auto;
-  /* mantiene tu layout responsive */
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
   justify-content: center;
-}
+} */
 .left,
 .right {
   flex: 1 1 400px;
@@ -193,11 +195,18 @@
 }
 
 .preview-image {
-  max-width: 400px;
-  width: 100%;
-  height: auto;
-}
+  display: block;
+  margin: 0 auto;
 
+  /* marco visual */
+  width: min(100%, 640px);
+  height: 360px; /* fija la altura del “marco” */
+  object-fit: contain; /* ajusta sin recortar ni deformar */
+  /* opcional: borde suave para notar el contenedor
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  */
+}
 .stageLoad {
   /* elimina cualquier posicionamiento flotante previo */
   clear: both;
@@ -283,4 +292,8 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.dimension-fields input[type="checkbox"] {
+  margin-right: 0.5rem;
 }

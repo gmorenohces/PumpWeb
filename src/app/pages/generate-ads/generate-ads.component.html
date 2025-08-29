@@ -1,0 +1,171 @@
+<!-- Banner full-width -->
+
+<div class="webp-container">
+  <div
+    class="webp-banner"
+    [ngStyle]="{
+      'background-image': 'url(' + bannerUrl + ')',
+      'height.px': bannerHeight
+    }"
+  >
+    <div class="webp-banner__overlay"></div>
+    <div class="webp-banner__text">
+      <h2>CREACIÓN DE ADS</h2>
+      <p>
+        Carga tus imágenes para la creación de los ads en diferentes formatos:
+      </p>
+      <p>Square (1:1), Vertical (9:16), Horizontal (16:9)</p>
+    </div>
+  </div>
+
+  <!-- 0) Imagen de referencia -->
+  <div *ngIf="step === 'reference'" class="settings-section">
+    <div class="select_reference">
+      <p>
+        Paso 1. Subir imagen de referencia para generar formatos adicionales:
+      </p>
+      <input
+        #refInput
+        type="file"
+        accept="image/png, image/jpeg"
+        hidden
+        (change)="onReferenceSelected($event)"
+      />
+      <button mat-raised-button (click)="refInput.click()">Seleccionar</button>
+    </div>
+    <div *ngIf="referenceUrl" class="preview-container">
+      <!-- Preview original -->
+      <div>
+        <img [src]="referenceUrl" class="preview-image" />
+      </div>
+    </div>
+
+    <div>
+      <div *ngIf="referenceUrl" class="action-buttons">
+        <button
+          mat-raised-button
+          class="btn-color"
+          [disabled]="!referenceUrl"
+          (click)="nextStep('outpainting')"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="step === 'outpainting'" class="settings-section">
+    <div *ngIf="referenceUrl">
+      <div class="select_reference">
+        <p>Paso 2. Configurar patrones de generación de formatos:</p>
+      </div>
+      <div *ngIf="referenceUrl" class="preview-container">
+        <!-- Preview original -->
+        <div>
+          <img [src]="referenceUrl" class="preview-image" />
+        </div>
+      </div>
+      <div class="dimension-fields">
+        <div>
+          <label>Imagen horizontal: </label>
+          <select [(ngModel)]="mode16x9">
+            <option value="Izquierda">Izquierda</option>
+            <option value="Derecha">Derecha</option>
+            <option value="Simetrico">Simétrico</option>
+          </select>
+        </div>
+        <div>
+          <label>Imagen vertical: </label>
+          <select [(ngModel)]="mode9x16">
+            <option value="Superior">Superior</option>
+            <option value="Inferior">Inferior</option>
+            <option value="Simetrico">Simétrico</option>
+          </select>
+        </div>
+      </div>
+      <div class="format-buttons">
+        <button
+          mat-raised-button
+          class="btn-color"
+          (click)="nextStep('reference')"
+        >
+          Anterior
+        </button>
+        <button
+          mat-raised-button
+          class="btn-color"
+          (click)="nextStep('images_reference')"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="step === 'images_reference'" class="settings-section">
+    <div class="select_reference">
+      <p>
+        Paso 3. Subir imágenes de referencia para generar ads (texto, logo):
+      </p>
+
+      <input
+        #multiRefInput
+        type="file"
+        accept="image/png, image/jpeg, image/webp"
+        multiple
+        hidden
+        (change)="onImagesSelected($event)"
+      />
+      <button mat-raised-button (click)="multiRefInput.click()">
+        Seleccionar
+      </button>
+
+      <small *ngIf="imagesRefUrls.length">
+        {{ imagesRefUrls.length }} seleccionada(s) — máximo 3
+      </small>
+      <small *ngIf="imagesRefError" style="color: #c00; margin-left: 0.5rem">
+        {{ imagesRefError }}
+      </small>
+    </div>
+
+    <!-- Previews en una fila, mismo espacio -->
+    <div *ngIf="imagesRefUrls.length" class="preview-row">
+      <figure class="thumb" *ngFor="let url of imagesRefUrls; let i = index">
+        <img [src]="url" [alt]="'Ref ' + (i + 1)" />
+        <figcaption>
+          Ref {{ i + 1 }}
+          <button type="button" class="mini-remove" (click)="removeImageRef(i)">
+            Quitar
+          </button>
+        </figcaption>
+      </figure>
+    </div>
+    <div class="format-buttons">
+      <button
+        mat-raised-button
+        class="btn-color"
+        (click)="nextStep('outpainting')"
+      >
+        Anterior
+      </button>
+      <button
+        mat-raised-button
+        class="btn-color"
+        (click)="generateAds()"
+      >
+        Generar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- resultados
+    <div class="preview-container" *ngIf="out16x9Url || out9x16Url">
+      <div *ngIf="out16x9Url">
+        <p>16:9</p>
+        <img [src]="out16x9Url" class="preview-image" />
+      </div>
+      <div *ngIf="out9x16Url">
+        <p>9:16</p>
+        <img [src]="out9x16Url" class="preview-image" />
+      </div>
+    </div> -->
