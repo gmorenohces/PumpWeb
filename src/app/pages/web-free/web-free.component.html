@@ -1,0 +1,236 @@
+<mat-card class="wf-card">
+  <!-- Toolbar -->
+  <div class="wf-toolbar">
+    <button mat-stroked-button color="primary" (click)="fileInput.click()">
+      <mat-icon>folder_open</mat-icon>
+      Cargar imágenes
+    </button>
+    <input
+      #fileInput
+      type="file"
+      multiple
+      accept="image/*"
+      (change)="onPickFiles($event)"
+      hidden
+      webkitdirectory
+    />
+
+    <button
+      mat-stroked-button
+      [matMenuTriggerFor]="menuPresets"
+      #presetsTrigger="matMenuTrigger"
+      matTooltip="Presets de lienzo"
+    >
+      <mat-icon>crop_square</mat-icon> Presets
+    </button>
+    <mat-menu #menuPresets="matMenu">
+      <!-- Presets base 512px -->
+      <button mat-menu-item (click)="setCanvasPreset(512, 512)">
+        512 × 512 (1:1)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(512, 683)">
+        512 × 683 (3:4)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(683, 512)">
+        683 × 512 (4:3)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(512, 910)">
+        512 × 910 (9:16)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(910, 512)">
+        910 × 512 (16:9)
+      </button>
+
+      <mat-divider></mat-divider>
+
+      <!-- Presets base 1024px -->
+      <button mat-menu-item (click)="setCanvasPreset(1024, 1024)">
+        1024 × 1024 (1:1)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(1024, 1365)">
+        1024 × 1365 (3:4)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(1365, 1024)">
+        1365 × 1024 (4:3)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(1024, 1820)">
+        1024 × 1820 (9:16)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(1820, 1024)">
+        1820 × 1024 (16:9)
+      </button>
+
+      <!-- Bloque editable: evita que los clics/teclas cierren el menú -->
+      <div
+        class="wf-menu-form"
+        (click)="$event.stopPropagation()"
+        (keydown)="$event.stopPropagation()"
+        style="padding: 8px 12px; width: 260px"
+      >
+        <div style="font-weight: 600; margin-bottom: 8px">
+          Preset personalizado
+        </div>
+
+        <div
+          style="
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+          "
+        >
+          <input
+            #pw
+            type="number"
+            min="1"
+            max="8192"
+            step="1"
+            [value]="canvasW"
+            placeholder="Ancho"
+            (click)="$event.stopPropagation()"
+            (keydown.enter)="$event.stopPropagation()"
+            autocomplete="off"
+            style="
+              width: 110px;
+              padding: 6px 8px;
+              border: 1px solid #d0d5dd;
+              border-radius: 6px;
+            "
+          />
+          <span>×</span>
+          <input
+            #ph
+            type="number"
+            min="1"
+            max="8192"
+            step="1"
+            [value]="canvasH"
+            placeholder="Alto"
+            (click)="$event.stopPropagation()"
+            (keydown.enter)="$event.stopPropagation()"
+            autocomplete="off"
+            style="
+              width: 110px;
+              padding: 6px 8px;
+              border: 1px solid #d0d5dd;
+              border-radius: 6px;
+            "
+          />
+        </div>
+
+        <div style="display: flex; gap: 8px">
+          <button
+            mat-stroked-button
+            color="primary"
+            (click)="applyCustomPreset(pw, ph); presetsTrigger.closeMenu()"
+            [disabled]="
+              !(pw.valueAsNumber || pw.value) || !(ph.valueAsNumber || ph.value)
+            "
+          >
+            Aplicar
+          </button>
+
+          <button mat-stroked-button (click)="swapPresetInputs(pw, ph)">
+            Invertir
+          </button>
+        </div>
+      </div>
+    </mat-menu>
+
+    <div class="wf-info" *ngIf="images.length">
+      <span>{{ idx + 1 }} / {{ images.length }}</span>
+      <span class="wf-name">{{ images[idx]?.name }}</span>
+      <span class="wf-sep">|</span>
+      <span>Canvas: {{ canvasW }}×{{ canvasH }}</span>
+    </div>
+
+    <span class="wf-flex"></span>
+
+    <button mat-icon-button matTooltip="Ajustar vista" (click)="zoomFit()">
+      <mat-icon>fit_screen</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="Reset vista" (click)="zoomReset()">
+      <mat-icon>center_focus_weak</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
+      matTooltip="Anterior"
+      (click)="prev()"
+      [disabled]="!images.length || idx === 0"
+    >
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      matTooltip="Siguiente"
+      (click)="next()"
+      [disabled]="!images.length || idx === images.length - 1"
+    >
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="processCurrent()"
+      [disabled]="!images.length"
+      style="margin-left: 8px"
+    >
+      Procesar
+    </button>
+    <button
+      mat-flat-button
+      color="accent"
+      (click)="downloadEdited()"
+      [disabled]="!canDownload"
+      style="margin-left: 8px"
+      matTooltip="Descargar la imagen modificada"
+    >
+      <mat-icon>download</mat-icon>
+      Descargar
+    </button>
+  </div>
+
+  <!-- GRID dos cards -->
+  <div class="wf-grid">
+    <!-- IZQUIERDA: Medidas reales (editor) -->
+    <div class="wf-col">
+      <h3 class="color-text">Imagen Original</h3>
+
+      <div
+        class="wf-stage"
+        (wheel)="onWheel($event)"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp($event)"
+      >
+        <canvas #canvasL class="wf-canvas"></canvas>
+
+        <!-- HUD -->
+        <div class="wf-hud" *ngIf="layer">
+          <div>
+            X: <b>{{ hud.x }}</b> Y: <b>{{ hud.y }}</b>
+          </div>
+          <div>
+            W×H: <b>{{ hud.w }}×{{ hud.h }}</b> | escala: <b>{{ hud.s }}</b>
+          </div>
+        </div>
+
+        <div class="wf-hint">
+          Zoom: rueda | Pan: <kbd>Espacio</kbd> + arrastrar (o botón medio) |
+          Mover: arrastrar | Resize: tiradores
+        </div>
+      </div>
+    </div>
+
+    <!-- DERECHA: Medidas procesadas (preview solo lectura) -->
+    <div class="wf-col">
+      <h3 class="color-text">Imagen Modificada</h3>
+
+      <div class="wf-stage">
+        <canvas #canvasR class="wf-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+</mat-card>

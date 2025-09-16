@@ -1,0 +1,280 @@
+/* ===== Contenedor General ===== */
+:host {
+  display: block;
+  padding: 16px 16px 48px;
+  background: radial-gradient(
+    1200px 600px at 10% -10%,
+    #0b1f2b 0,
+    #0b1320 45%,
+    #0b1018 100%
+  );
+}
+
+.webp-container {
+  padding: 1rem;
+}
+
+.webp-banner__text {
+  position: relative;
+  color: #fff;
+  padding: 1rem 2rem;
+}
+
+.webp-banner__text h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.webp-banner__text p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* ===== Banner y Selección de Archivos ===== */
+.upload-section {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.webp-banner {
+  width: 80%;
+  max-width: 80%;
+  display: block;
+  object-fit: cover;
+  margin: 0 auto 1rem;
+}
+
+/* mismo ancho que el banner (80%) y centrado */
+.webp-bannerCards {
+  width: 80%;
+  max-width: 80%;
+  margin: 0 auto 1rem;
+  position: relative;
+}
+
+/* fila de botones */
+.actions-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+/* layout principal: 4 cards + aside */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 340px; /* main + parámetros */
+  gap: 16px;
+  align-items: start;
+}
+
+/* dos filas de cards, cada fila con 2 columnas iguales */
+.cardImage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  justify-content: stretch;
+  margin-bottom: 16px;
+}
+
+/* tarjetas con altura uniforme */
+:host {
+  --card-h: auto;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  height: var(--card-h);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+/* área media llena el alto disponible */
+.card-media,
+.viewer {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  background: #0e141a;
+  padding: 8px;
+}
+
+/* imágenes se ajustan sin recortar */
+.card-media img,
+.viewer-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  background-color: #ffffff45;
+  border-radius: 10px;
+}
+
+.viewer-img {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.viewer-img:active {
+  cursor: grabbing;
+}
+
+.card-actions {
+  margin-top: auto;
+  padding: 8px 12px 12px;
+}
+.meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  opacity: 0.85;
+  color: white;
+  padding-left: 15px;
+  flex-direction: column;
+}
+
+/* aside de parámetros a la derecha */
+.params {
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.params-card {
+  position: sticky;
+  top: 12px;
+}
+.params-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.row.two > * {
+  flex: 1;
+}
+.w-100 {
+  width: 100%;
+}
+
+/* responsive */
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .params {
+    width: auto;
+  }
+}
+@media (max-width: 820px) {
+  .cardImage {
+    grid-template-columns: 1fr;
+  }
+  :host {
+    --card-h: auto;
+  }
+}
+
+/* Altura fija: SOLO para las 4 cards del grid */
+.cardImage .card,
+.viewer-card.card {
+  height: var(--card-h); /* p.ej. 360px */
+}
+
+/* La base .card ya NO fija altura (se mantiene tu estilo) */
+.card {
+  display: flex;
+  flex-direction: column;
+  /* …tu background, border, shadow… */
+  overflow: hidden; /* ok para las del grid */
+}
+
+/* Panel de Parámetros: que crezca y haga scroll si es largo */
+:host {
+  --stickyTop: 12px;
+} /* ajusta si tu navbar es más alta */
+
+.params-card {
+  position: sticky;
+  top: var(--stickyTop, 12px);
+  height: auto; /* NO fijar altura */
+  overflow: auto; /* sobreescribe overflow:hidden */
+  max-height: calc(100vh - var(--stickyTop, 12px) - 16px);
+}
+
+/* Por si acaso, evita que el grid iguale alturas con el aside */
+.layout {
+  align-items: start;
+}
+.params {
+  align-self: start;
+}
+
+.mat-mdc-card-subtitle {
+  color: rgb(169, 169, 169);
+  margin-bottom: 20px;
+}
+
+::ng-deep .mat-mdc-card-title {
+  color: white !important;
+}
+
+.color-input {
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Damero sutil para ver bordes/transparentes */
+.checker {
+  color: white;
+  background-color: #435260;
+  background-image: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.05) 25%,
+      transparent 25%
+    ),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+/* Vista 1:1: no escales la imagen; permite scroll en la card */
+.pixel-view {
+  overflow: auto;
+}
+.pixel-view img,
+.pixel-view .viewer-img {
+  max-width: none;
+  max-height: none;
+}
+
+::ng-deep .mat-internal-form-field > label.mdc-label {
+  color: rgb(221, 221, 221) !important;
+}
+
+.margin-hint {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  color: white !important;
+}
+
+.color-label {
+  color: white !important;
+}
+
+.placeholder {
+  color: rgb(192, 192, 192) !important;
+}
+
+.info-block {
+  color: white !important;
+}

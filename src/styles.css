@@ -5,10 +5,9 @@
 /* Helvetica Neue LT Std – Light (300) */
 @font-face {
   font-family: "HelveticaNeueLight";
-  src: url("/assets/fonts/HelveticaNeueLTStd-LtEx.woff2") format("woff2"),
-    url("/assets/fonts/HelveticaNeueLTStd-LtEx.woff") format("woff"),
-    url("/assets/fonts/HelveticaNeueLTStd-43LightExtended.otf")
-      format("opentype");
+  src: url("/fonts/HelveticaNeueLTStd-LtEx.woff2") format("woff2"),
+    url("/fonts/HelveticaNeueLTStd-LtEx.woff") format("woff"),
+    url("/fonts/HelveticaNeueLTStd-43LightExtended.otf") format("opentype");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -17,10 +16,9 @@
 /* Helvetica Neue LT Std – Black (900) */
 @font-face {
   font-family: "HelveticaNeueBlack";
-  src: url("/assets/fonts/HelveticaNeueLTStd-BlkEx.woff2") format("woff2"),
-    url("/assets/fonts/HelveticaNeueLTStd-BlkEx.woff") format("woff"),
-    url("/assets/fonts/HelveticaNeueLTStd-93BlackExtended.otf")
-      format("opentype");
+  src: url("/fonts/HelveticaNeueLTStd-BlkEx.woff2") format("woff2"),
+    url("/fonts/HelveticaNeueLTStd-BlkEx.woff") format("woff"),
+    url("/fonts/HelveticaNeueLTStd-93BlackExtended.otf") format("opentype");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -29,9 +27,9 @@
 /* URW DIN Arabic – Regular (400) */
 @font-face {
   font-family: "URWDINArabic";
-  src: url("/assets/fonts/URWDINArabic-Regular.woff2") format("woff2"),
-    url("/assets/fonts/URWDINArabic-Regular.woff") format("woff"),
-    url("/assets/fonts/URWDINArabic-Regular.ttf") format("truetype");
+  src: url("/fonts/URWDINArabic-Regular.woff2") format("woff2"),
+    url("/fonts/URWDINArabic-Regular.woff") format("woff"),
+    url("/fonts/URWDINArabic-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -40,9 +38,9 @@
 /* URW DIN Arabic – Medium (500) */
 @font-face {
   font-family: "URWDINArabic";
-  src: url("/assets/fonts/URWDINArabic-Medium.woff2") format("woff2"),
-    url("/assets/fonts/URWDINArabic-Medium.woff") format("woff"),
-    url("/assets/fonts/URWDINArabic-Medium.ttf") format("truetype");
+  src: url("/fonts/URWDINArabic-Medium.woff2") format("woff2"),
+    url("/fonts/URWDINArabic-Medium.woff") format("woff"),
+    url("/fonts/URWDINArabic-Medium.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -51,9 +49,9 @@
 /* URW DIN Arabic – Bold (700) */
 @font-face {
   font-family: "URWDINArabic";
-  src: url("/assets/fonts/URWDINArabic-Bold.woff2") format("woff2"),
-    url("/assets/fonts/URWDINArabic-Bold.woff") format("woff"),
-    url("/assets/fonts/URWDINArabic-Bold.ttf") format("truetype");
+  src: url("/fonts/URWDINArabic-Bold.woff2") format("woff2"),
+    url("/fonts/URWDINArabic-Bold.woff") format("woff"),
+    url("/fonts/URWDINArabic-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -62,9 +60,9 @@
 /* URW DIN Arabic – Black (900) */
 @font-face {
   font-family: "URWDINArabic";
-  src: url("/assets/fonts/URWDINArabic-Black.woff2") format("woff2"),
-    url("/assets/fonts/URWDINArabic-Black.woff") format("woff"),
-    url("/assets/fonts/URWDINArabic-Black.ttf") format("truetype");
+  src: url("/fonts/URWDINArabic-Black.woff2") format("woff2"),
+    url("/fonts/URWDINArabic-Black.woff") format("woff"),
+    url("/fonts/URWDINArabic-Black.ttf") format("truetype");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
