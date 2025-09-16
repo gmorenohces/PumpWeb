@@ -1,0 +1,98 @@
+.wf-card {
+  padding: 12px;
+}
+
+/* toolbar existente */
+.wf-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.wf-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.9;
+}
+.wf-name {
+  max-width: 38ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wf-sep {
+  opacity: 0.5;
+}
+.wf-flex {
+  flex: 1;
+}
+
+/* NUEVO: grid 2 columnas */
+.wf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.wf-col h3 {
+  margin: 0 0 8px 0;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* stage (usabas uno, ahora son dos) */
+.wf-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: repeating-conic-gradient(#e9eef3 0% 25%, #f7f9fb 0% 50%) 50%/24px
+    24px; /* damero */
+}
+.wf-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* HUD + hint (con tu estilo previo) */
+.wf-hint,
+.wf-hud {
+  position: absolute;
+  left: 12px;
+  font-size: 0.82rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.wf-hint {
+  bottom: 8px;
+}
+.wf-hud {
+  top: 8px;
+  line-height: 1.25;
+}
+kbd {
+  background: #f2f4f7;
+  border: 1px solid #d0d5dd;
+  border-bottom-width: 2px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+}
+
+/* responsive */
+@media (max-width: 1100px) {
+  .wf-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.color-text {
+  color: black !important;
+}

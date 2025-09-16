@@ -1,0 +1,99 @@
+/* ===== Contenedor General ===== */
+:host {
+  display: block;
+  padding: 16px 16px 48px;
+  background: radial-gradient(
+    1200px 600px at 10% -10%,
+    #0b1f2b 0,
+    #0b1320 45%,
+    #0b1018 100%
+  );
+}
+
+.webp-container {
+  padding: 1rem;
+}
+
+.webp-banner__text {
+  position: relative;
+  color: #fff;
+  padding: 1rem 2rem;
+}
+
+.webp-banner__text h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.webp-banner__text p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* ===== Banner y Selección de Archivos ===== */
+.upload-section {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.webp-banner {
+  width: 80%;
+  max-width: 80%;
+  display: block;
+  object-fit: cover;
+  margin: 0 auto 1rem;
+}
+
+.menu-grid {
+  max-width: 1100px;
+  margin: 24px auto;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.menu-card {
+  cursor: pointer;
+  border-radius: 16px;
+  padding: 16px;
+  background: #0f172a;
+  color: #dbe5ff;
+}
+
+.mat-mdc-card-header {
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.mat-mdc-card-actions {
+  justify-content: center;
+  margin-top: 5px;
+}
+
+.card-media {
+  aspect-ratio: 16/9;
+  width: 100%;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.preview {
+  border-radius: 16px;
+  padding: 16px;
+  background: #0f172a;
+  color: #dbe5ff;
+}
+
+/* el video ocupa todo y recorta como cover */
+.card-media-el {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
+.btn-color {
+  color: #fff !important;
+  background-color: rgb(5, 14, 33) !important;
+  width: 120px;
+  margin-top: 10px;
+}

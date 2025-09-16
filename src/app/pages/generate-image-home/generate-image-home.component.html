@@ -1,0 +1,115 @@
+<div class="webp-container">
+  <div
+    class="webp-banner"
+    [ngStyle]="{
+      'background-image': 'url(' + bannerUrl + ')',
+      'height.px': bannerHeight
+    }"
+  >
+    <div class="webp-banner__overlay"></div>
+    <div class="webp-banner__text">
+      <h2>GENERACIÓN DE IMÁGENES</h2>
+      <p>
+        Inspírate y crea imágenes únicas a partir de tus ideas o transforma
+        fotos en nuevas obras.
+      </p>
+    </div>
+  </div>
+  <div class="menu-grid">
+    <mat-card
+      class="mat-elevation-z2 menu-card"
+      routerLink="/webp/360"
+      style="cursor: pointer"
+    >
+      <mat-card-header>
+        <h2>Texto a imagen</h2>
+      </mat-card-header>
+
+      <!-- Media del card -->
+      <div class="card-media">
+        <video
+          class="card-media-el"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          poster="images/LogoPump.png"
+        >
+          <source src="videos/videoText.mp4" type="video/mp4" />
+          Tu navegador no soporta video HTML5.
+        </video>
+      </div>
+
+      <mat-card-actions>
+        <button mat-button class="btn-color" (click)="goToText()">
+          Entrar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card
+      class="mat-elevation-z2 menu-card"
+      routerLink="/webp/360"
+      style="cursor: pointer"
+    >
+      <mat-card-header>
+        <h2>Imagen a imagen</h2>
+      </mat-card-header>
+
+      <!-- Media del card -->
+      <div class="card-media">
+        <video
+          class="card-media-el"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          poster="images/LogoPump.png"
+        >
+          <source src="videos/image.mp4" type="video/mp4" />
+          Tu navegador no soporta video HTML5.
+        </video>
+      </div>
+
+      <mat-card-actions>
+        <button mat-button class="btn-color" (click)="goToImage()">
+          Entrar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card
+      class="mat-elevation-z2 menu-card"
+      routerLink="/image-referencia"
+      style="cursor: pointer"
+    >
+      <mat-card-header>
+        <h2>Imagen de referencia</h2>
+      </mat-card-header>
+
+      <!-- Media del card -->
+      <div class="card-media">
+        <video
+          class="card-media-el"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          poster="images/LogoPump.png"
+        >
+          <source src="videos/reference.mp4" type="video/mp4" />
+          Tu navegador no soporta video HTML5.
+        </video>
+      </div>
+
+      <mat-card-actions>
+        <button mat-button class="btn-color" (click)="goToImageReferencia()">
+          Entrar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
