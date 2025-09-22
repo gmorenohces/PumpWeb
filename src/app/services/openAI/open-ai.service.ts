@@ -89,6 +89,38 @@ export class OpenAIService {
   private path = environment.apiUrl + "/users";
   private readonly _http = inject(HttpClient);
 
+  sendImageForOutpainting(
+    blob: Blob,
+    filename: string,
+    outpaint_by: string,
+    recortar: { L: boolean; D: boolean; S: boolean; I: boolean },
+    targetW: number,
+    targetH: number,
+    crop: {
+      L0: number;
+      D0: number;
+      S0: number;
+      I0: number;
+      cropped_input: boolean;
+    }
+  ): Observable<Blob> {
+    const formData = new FormData();
+    formData.append("file", blob, filename);
+    formData.append("outpaint_by", outpaint_by);
+    formData.append("recortar", JSON.stringify(recortar));
+    formData.append("target_w", String(targetW));
+    formData.append("target_h", String(targetH));
+    formData.append("crop_l", String(crop.L0));
+    formData.append("crop_d", String(crop.D0));
+    formData.append("crop_s", String(crop.S0));
+    formData.append("crop_i", String(crop.I0));
+    formData.append("cropped_input", crop.cropped_input ? "1" : "0");
+
+    return this._http.post(`${this.path}/outpainting`, formData, {
+      responseType: "blob",
+    });
+  }
+
   /** 1) Generar imágenes nuevas desde un prompt */
   generate(prompt: string, n = 1): Observable<OpenAiResponse> {
     return this._http.post<OpenAiResponse>(`${this.path}/generate`, {

@@ -26,7 +26,7 @@ export class AppComponent {
     { path: "/home", label: "INICIO" },
     { path: "/webphome", label: "WEBP" },
     { path: "/generateImages", label: "IMAGEN" },
-    // { path: "/chat", label: "CHAT" },
+    { path: "/chat", label: "CHAT" },
     // { path: "/ads", label: "ADS" },
     // { path: "/format", label: "FORMATOS" },
   ];

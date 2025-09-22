@@ -1,0 +1,82 @@
+<!-- Banner (usa el mismo markup que text-image) -->
+<div
+  class="webp-banner"
+  [ngStyle]="{
+    'background-image': 'url(' + bannerUrl + ')',
+    'height.px': bannerHeight
+  }"
+>
+  <div class="webp-banner__overlay"></div>
+  <div class="webp-banner__text">
+    <h2>PUMP Assistant</h2>
+    <p>Redacta copys, guiones y briefs con tu histórico de campañas.</p>
+  </div>
+</div>
+
+<!-- Layout del chat -->
+<div class="layout">
+  <!-- Chat -->
+  <section class="chat mat-elevation-z4">
+    <div class="chat__scroll" #scrollArea>
+      <ng-container *ngFor="let m of messages; let i = index">
+        <div class="msg" [ngClass]="m.role">
+          <div class="msg__bubble">
+            <div
+              class="msg__role"
+              *ngIf="i === 0 || messages[i - 1]?.role !== m.role"
+            >
+              {{ m.role === "user" ? "Tú" : "Assistant" }}
+            </div>
+            <div class="msg__text">{{ m.text }}</div>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="msg assistant" *ngIf="typing">
+        <div class="msg__bubble">
+          <div class="dots"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <form class="composer" (ngSubmit)="send()">
+      <input
+        class="composer__input"
+        [(ngModel)]="input"
+        name="input"
+        placeholder="Escribe tu pedido… (ej. 3 captions para la colección X, tono técnico)"
+        [disabled]="sending"
+      />
+      <button
+        class="composer__btn"
+        [disabled]="sending || !input.trim()"
+        type="submit"
+      >
+        Enviar
+      </button>
+    </form>
+    <div class="composer__hint">
+      <small>Consejo: pide variaciones A/B y hashtags por bucket.</small>
+    </div>
+  </section>
+
+  <!-- Lateral -->
+  <aside class="side mat-elevation-z2">
+    <h3 class="card-title">Sesión</h3>
+    <div class="side__row">
+      <span class="label">Session ID</span>
+      <span class="value mono">{{ sessionId || "—" }}</span>
+    </div>
+    <button class="btn" (click)="newSession()" [disabled]="sending">
+      Nueva conversación
+    </button>
+    <button
+      class="btn ghost"
+      (click)="reloadHistory()"
+      [disabled]="sending || !sessionId"
+    >
+      Recargar historial
+    </button>
+  </aside>
+</div>

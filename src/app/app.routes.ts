@@ -13,6 +13,7 @@ import { WebhomeComponent } from "./pages/webhome/webhome.component";
 import { GenerateImageHomeComponent } from "./pages/generate-image-home/generate-image-home.component";
 import { TextImageComponent } from "./pages/text-image/text-image.component";
 import { ImageReferenciaComponent } from "./pages/image-referencia/image-referencia.component";
+import { ChatAssistantComponent } from "./pages/chat-assistant/chat-assistant.component";
 
 export const routes: Routes = [
   { path: "home", component: HomeComponent, canActivate: [authGuard] },
@@ -26,8 +27,8 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
-    path: "format",
-    component: GenerateOutPaintingComponent,
+    path: "chat",
+    component: ChatAssistantComponent,
     canActivate: [authGuard],
   },
   {

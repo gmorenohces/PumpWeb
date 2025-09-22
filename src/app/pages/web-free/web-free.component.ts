@@ -1,4 +1,10 @@
-import { Component, ElementRef, ViewChild, HostListener } from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  HostListener,
+  inject,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
@@ -6,6 +12,9 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatDividerModule } from "@angular/material/divider";
+
+import { OpenAIService } from "../../services/openAI/open-ai.service";
+import { lastValueFrom } from "rxjs";
 
 type HandleId = "n" | "s" | "e" | "w" | "nw" | "ne" | "sw" | "se" | "none";
 type DragMode = "none" | "move" | "resize" | "pan";
@@ -55,6 +64,14 @@ export class WebFreeComponent {
   canvasLRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild("canvasR", { static: true })
   canvasRRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild("canvasCrop", { static: false })
+  canvasCropRef!: ElementRef<HTMLCanvasElement>;
+
+  private api = inject(OpenAIService);
+
+  previewScale = 0.6; // escala visual de los canvases del panel derecho
+  cropW = 1;
+  cropH = 1;
 
   // Mundo/lienzo
   canvasW = 1080;
@@ -88,6 +105,104 @@ export class WebFreeComponent {
     this.ctxL = this.canvasLRef.nativeElement.getContext("2d");
     this.ctxR = this.canvasRRef.nativeElement.getContext("2d");
     this.redrawBoth();
+  }
+
+  getOutpaintMargins(): { L: number; D: number; S: number; I: number } {
+    if (!this.layer) return { L: 0, D: 0, S: 0, I: 0 };
+
+    const { x, y, w, h, sx, sy } = this.layer;
+    const { canvasW, canvasH } = this;
+
+    const realW = w * sx;
+    const realH = h * sy;
+
+    const L = Math.max(0, x);
+    const D = Math.max(0, canvasW - (x + realW));
+    const S = Math.max(0, y);
+    const I = Math.max(0, canvasH - (y + realH));
+
+    console.log("imgXYWH:", x, y, realW, realH);
+    console.log("canvasWH:", canvasW, canvasH);
+    console.log("L, D, S, I:", L, D, S, I);
+
+    return { L, D, S, I };
+  }
+
+  needsOutpainting(): boolean {
+    console.log("needsOutpainting...");
+
+    const { L, D, S, I } = this.getOutpaintMargins();
+    return L > 0 || D > 0 || S > 0 || I > 0;
+  }
+
+  getClaidOutpaintParams(): {
+    outpaint_by: string;
+    recortar: { L: boolean; D: boolean; S: boolean; I: boolean };
+  } {
+    console.log("get Claid Output needsOutpainting...");
+    const { L, D, S, I } = this.getOutpaintMargins();
+
+    // Claid requiere simetría: tomamos el mayor valor por eje
+    const hMargin = Math.ceil(Math.max(L, D));
+    const vMargin = Math.ceil(Math.max(S, I));
+
+    return {
+      outpaint_by: `${hMargin}px ${vMargin}px`,
+      recortar: {
+        L: L < D, // si D es el importante, se recorta L
+        D: D < L, // si L es el importante, se recorta D
+        S: S < I,
+        I: I < S,
+      },
+    };
+  }
+
+  private getOpaqueBounds(cnv: HTMLCanvasElement) {
+    const w = cnv.width,
+      h = cnv.height;
+    const ctx = cnv.getContext("2d")!;
+    const data = ctx.getImageData(0, 0, w, h).data;
+
+    let minX = w,
+      minY = h,
+      maxX = -1,
+      maxY = -1;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const a = data[(y * w + x) * 4 + 3];
+        if (a > 0) {
+          if (x < minX) minX = x;
+          if (y < minY) minY = y;
+          if (x > maxX) maxX = x;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0 || maxY < 0) return { x: 0, y: 0, w: 0, h: 0, empty: true };
+
+    return {
+      x: minX,
+      y: minY,
+      w: maxX - minX + 1,
+      h: maxY - minY + 1,
+      empty: false,
+    };
+  }
+
+  private canvasToBlob(
+    cnv: HTMLCanvasElement,
+    type = "image/png",
+    quality = 1.0
+  ): Promise<Blob> {
+    return new Promise((res) => cnv.toBlob((b) => res(b!), type, quality));
+  }
+
+  private async blobToBitmap(blob: Blob): Promise<ImageBitmap> {
+    return await createImageBitmap(blob);
+  }
+
+  private nextFrame(): Promise<void> {
+    return new Promise((r) => requestAnimationFrame(() => r()));
   }
 
   private markProcessedReady() {
@@ -321,19 +436,124 @@ export class WebFreeComponent {
     };
   }
 
-  /* ========= Procesar (rasterizar) ========= */
   // async processCurrent() {
   //   if (!this.images.length || !this.layer) return;
+  //   if (this.needsOutpainting()) {
+  //     const { outpaint_by, recortar } = this.getClaidOutpaintParams();
+  //     // Pasar outpaint_by y recortar al backend
+  //   }
+  //   // 1) Cargar base
   //   const it = this.images[this.idx];
   //   const base = await this.loadImage(it.url);
 
-  //   const canvas = document.createElement("canvas");
-  //   canvas.width = this.canvasW;
-  //   canvas.height = this.canvasH;
-  //   const ctx = canvas.getContext("2d")!;
-  //   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //   // fondo transparente (checker solo es visual en el viewer)
-  //   ctx.drawImage(
+  //   // 2) Lienzo offscreen EXACTO al preset (salida final)
+  //   const outW = this.canvasW;
+  //   const outH = this.canvasH;
+  //   const off = document.createElement("canvas");
+  //   off.width = outW;
+  //   off.height = outH;
+  //   const octx = off.getContext("2d")!;
+  //   // Asegura estado limpio
+  //   octx.setTransform(1, 0, 0, 1, 0, 0);
+  //   octx.clearRect(0, 0, outW, outH);
+
+  //   // 3) Dibuja la imagen con la transform del layer (tu lógica)
+  //   //    IMPORTANTE: aquí estás posicionando/escalando la imagen sobre el lienzo final
+  //   octx.drawImage(
+  //     base,
+  //     this.layer.x,
+  //     this.layer.y,
+  //     this.layer.w * this.layer.sx,
+  //     this.layer.h * this.layer.sy
+  //   );
+
+  //   // 4) Blob + URL del resultado final a tamaño exacto
+  //   const blob: Blob = await new Promise((res) =>
+  //     off.toBlob((b) => res(b!), "image/png", 1.0)
+  //   );
+
+  //   if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
+  //   it.processedBlob = blob;
+  //   it.processedUrl = URL.createObjectURL(blob);
+
+  //   // 5) Actualiza el canvas de la derecha AL MISMO TAMAÑO DEL PRESET
+  //   const cR = this.canvasRRef.nativeElement;
+  //   cR.width = outW;
+  //   cR.height = outH;
+  //   const rctx = cR.getContext("2d")!;
+  //   rctx.setTransform(1, 0, 0, 1, 0, 0);
+  //   rctx.clearRect(0, 0, outW, outH);
+  //   // Dibuja el resultado 1:1 para previsualizarlo
+  //   rctx.drawImage(off, 0, 0);
+
+  //   // 6) (opcional) si tu preview usa otra ruta, puedes seguir usando tu método
+  //   // this.redrawRight(); // solo si dependes de él para overlays/HUD
+
+  //   // 7) Habilita el botón de descarga
+  //   this.markProcessedReady(); // o this.canDownload = true;
+  // }
+
+  /**
+   * Procesar la imagen actual (outpainting si aplica)
+   */
+
+  // async processCurrent() {
+  //   if (!this.images.length || !this.layer) return;
+
+  //   const it = this.images[this.idx];
+  //   const outW = this.canvasW;
+  //   const outH = this.canvasH;
+
+  //   // --- SI NECESITA OUTPAINTING: ENVIAR ORIGINAL A CLAID ---
+  //   if (this.needsOutpainting()) {
+  //     const { outpaint_by, recortar } = this.getClaidOutpaintParams();
+
+  //     // 1) Blob de la imagen ORIGINAL (no el offscreen)
+  //     //    si guardas File en it.file úsalo; si no, baja del url:
+  //     const origBlob =
+  //       it.file instanceof Blob ? it.file : await (await fetch(it.url)).blob();
+
+  //     // 2) Llamar al service
+  //     const finalBlob = await lastValueFrom(
+  //       this.api.sendImageForOutpainting(
+  //         origBlob,
+  //         it.name || "input.png",
+  //         outpaint_by,
+  //         recortar,
+  //         outW,
+  //         outH
+  //       )
+  //     );
+
+  //     // 3) Guardar y previsualizar la RESPUESTA REAL
+  //     if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
+  //     it.processedBlob = finalBlob;
+  //     it.processedUrl = URL.createObjectURL(finalBlob);
+
+  //     const cR = this.canvasRRef.nativeElement;
+  //     cR.width = outW;
+  //     cR.height = outH;
+  //     const rctx = cR.getContext("2d")!;
+  //     rctx.setTransform(1, 0, 0, 1, 0, 0);
+  //     rctx.clearRect(0, 0, outW, outH);
+
+  //     const bmp = await createImageBitmap(finalBlob);
+  //     rctx.drawImage(bmp, 0, 0, outW, outH);
+
+  //     this.markProcessedReady();
+  //     return;
+  //   }
+
+  //   // --- SIN OUTPAINTING: tu flujo anterior con offscreen ---
+  //   const base = await this.loadImage(it.url);
+  //   const off = document.createElement("canvas");
+  //   off.width = outW;
+  //   off.height = outH;
+  //   const octx = off.getContext("2d")!;
+  //   octx.setTransform(1, 0, 0, 1, 0, 0);
+  //   octx.clearRect(0, 0, outW, outH);
+
+  //   octx.drawImage(
   //     base,
   //     this.layer.x,
   //     this.layer.y,
@@ -342,36 +562,39 @@ export class WebFreeComponent {
   //   );
 
   //   const blob: Blob = await new Promise((res) =>
-  //     canvas.toBlob((b) => res(b!), "image/png")
+  //     off.toBlob((b) => res(b!), "image/png", 1.0)
   //   );
+
   //   if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
   //   it.processedBlob = blob;
   //   it.processedUrl = URL.createObjectURL(blob);
 
-  //   this.redrawRight();
+  //   const cR = this.canvasRRef.nativeElement;
+  //   cR.width = outW;
+  //   cR.height = outH;
+  //   const rctx = cR.getContext("2d")!;
+  //   rctx.setTransform(1, 0, 0, 1, 0, 0);
+  //   rctx.clearRect(0, 0, outW, outH);
+  //   rctx.drawImage(off, 0, 0);
+
   //   this.markProcessedReady();
   // }
 
   async processCurrent() {
     if (!this.images.length || !this.layer) return;
 
-    // 1) Cargar base
     const it = this.images[this.idx];
-    const base = await this.loadImage(it.url);
-
-    // 2) Lienzo offscreen EXACTO al preset (salida final)
     const outW = this.canvasW;
     const outH = this.canvasH;
+
+    // 1) Componer SIEMPRE el preprocesado 1:1 del lienzo
+    const base = await this.loadImage(it.url);
     const off = document.createElement("canvas");
     off.width = outW;
     off.height = outH;
     const octx = off.getContext("2d")!;
-    // Asegura estado limpio
     octx.setTransform(1, 0, 0, 1, 0, 0);
     octx.clearRect(0, 0, outW, outH);
-
-    // 3) Dibuja la imagen con la transform del layer (tu lógica)
-    //    IMPORTANTE: aquí estás posicionando/escalando la imagen sobre el lienzo final
     octx.drawImage(
       base,
       this.layer.x,
@@ -380,30 +603,174 @@ export class WebFreeComponent {
       this.layer.h * this.layer.sy
     );
 
-    // 4) Blob + URL del resultado final a tamaño exacto
-    const blob: Blob = await new Promise((res) =>
-      off.toBlob((b) => res(b!), "image/png", 1.0)
+    // 2) Mostrar el PREPROCESADO en el card superior (Imagen Modificada)
+    {
+      const cR = this.canvasRRef.nativeElement;
+      cR.width = outW;
+      cR.height = outH;
+      const rctx = cR.getContext("2d")!;
+      rctx.setTransform(1, 0, 0, 1, 0, 0);
+      rctx.clearRect(0, 0, outW, outH);
+      rctx.drawImage(off, 0, 0);
+    }
+
+    const preBlob = await this.canvasToBlob(off);
+
+    // 3) Si NO necesita outpainting, guardamos y salimos
+    if (!this.needsOutpainting()) {
+      if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
+      it.processedBlob = preBlob;
+      it.processedUrl = URL.createObjectURL(preBlob);
+
+      // limpiar card del crop
+      if (this.canvasCropRef) {
+        const cC = this.canvasCropRef.nativeElement;
+        cC.width = 1;
+        cC.height = 1;
+        const cctx = cC.getContext("2d")!;
+        cctx.clearRect(0, 0, 1, 1);
+        this.cropW = 1;
+        this.cropH = 1;
+        await this.nextFrame(); // asegura que el marco se reajuste
+      }
+
+      this.markProcessedReady();
+      return;
+    }
+
+    // 4) Encontrar región opaca (sin transparente) para ENVIAR a Claid
+    const bounds = this.getOpaqueBounds(off);
+    if (bounds.empty) {
+      // no hay nada opaco: devolvemos el preprocesado
+      if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
+      it.processedBlob = preBlob;
+      it.processedUrl = URL.createObjectURL(preBlob);
+      this.markProcessedReady();
+      return;
+    }
+
+    // preparar el canvas del crop
+    const cropCanvas = document.createElement("canvas");
+    cropCanvas.width = bounds.w;
+    cropCanvas.height = bounds.h;
+    cropCanvas
+      .getContext("2d")!
+      .drawImage(
+        off,
+        bounds.x,
+        bounds.y,
+        bounds.w,
+        bounds.h,
+        0,
+        0,
+        bounds.w,
+        bounds.h
+      );
+
+    // 4.1) Mostrar el CROP en el card inferior
+    //     Importante: primero actualizamos los CSS vars (cropW/cropH),
+    //     esperamos un frame para que Angular los aplique,
+    //     y recién luego pintamos el canvas para evitar que se vea "una rayita".
+    if (this.canvasCropRef) {
+      this.cropW = bounds.w;
+      this.cropH = bounds.h;
+      await this.nextFrame(); // deja que el DOM aplique --w/--h
+
+      const cC = this.canvasCropRef.nativeElement;
+      cC.width = bounds.w;
+      cC.height = bounds.h;
+      const cctx = cC.getContext("2d")!;
+      cctx.setTransform(1, 0, 0, 1, 0, 0);
+      cctx.clearRect(0, 0, bounds.w, bounds.h);
+      cctx.drawImage(cropCanvas, 0, 0);
+    }
+
+    const croppedBlob = await this.canvasToBlob(cropCanvas);
+
+    // Márgenes recortados respecto al canvas original (para reconstruir posición en el back)
+    const L0 = bounds.x;
+    const S0 = bounds.y;
+    const D0 = outW - (bounds.x + bounds.w);
+    const I0 = outH - (bounds.y + bounds.h);
+
+    const { outpaint_by, recortar } = this.claidParamsFromMargins(
+      L0,
+      D0,
+      S0,
+      I0
     );
 
-    if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
-    it.processedBlob = blob;
-    it.processedUrl = URL.createObjectURL(blob);
+    // 5) Enviar a CLAID la IMAGEN CROP (opaca) + metadatos
+    try {
+      const finalBlob = await lastValueFrom(
+        this.api.sendImageForOutpainting(
+          croppedBlob,
+          it.name || "input.png",
+          outpaint_by,
+          recortar,
+          outW,
+          outH,
+          { L0, D0, S0, I0, cropped_input: true }
+        )
+      );
 
-    // 5) Actualiza el canvas de la derecha AL MISMO TAMAÑO DEL PRESET
-    const cR = this.canvasRRef.nativeElement;
-    cR.width = outW;
-    cR.height = outH;
-    const rctx = cR.getContext("2d")!;
-    rctx.setTransform(1, 0, 0, 1, 0, 0);
-    rctx.clearRect(0, 0, outW, outH);
-    // Dibuja el resultado 1:1 para previsualizarlo
-    rctx.drawImage(off, 0, 0);
+      if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
+      it.processedBlob = finalBlob;
+      it.processedUrl = URL.createObjectURL(finalBlob);
 
-    // 6) (opcional) si tu preview usa otra ruta, puedes seguir usando tu método
-    // this.redrawRight(); // solo si dependes de él para overlays/HUD
+      // 6) Reemplazar el card superior con el RESULTADO FINAL (1:1)
+      const bmp = await this.blobToBitmap(finalBlob);
+      const cR = this.canvasRRef.nativeElement;
+      const rctx = cR.getContext("2d")!;
+      rctx.setTransform(1, 0, 0, 1, 0, 0);
+      rctx.clearRect(0, 0, outW, outH);
+      rctx.drawImage(bmp, 0, 0, outW, outH);
 
-    // 7) Habilita el botón de descarga
-    this.markProcessedReady(); // o this.canDownload = true;
+      this.markProcessedReady();
+    } catch (err) {
+      console.error("Error back:", err);
+
+      // Devolvemos el preprocesado en caso de fallo
+      if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
+      it.processedBlob = preBlob;
+      it.processedUrl = URL.createObjectURL(preBlob);
+      this.markProcessedReady();
+    }
+  }
+
+  private claidParamsFromMargins(
+    L0: number,
+    D0: number,
+    S0: number,
+    I0: number
+  ) {
+    // píxeles a añadir por eje: mitad de la suma (simétrico en Claid)
+    const Hsum = L0 + D0;
+    const Vsum = S0 + I0;
+    const hpx = Hsum > 0 ? Math.ceil(Hsum / 2) : 0;
+    const vpx = Vsum > 0 ? Math.ceil(Vsum / 2) : 0;
+
+    // qué lado recortar (solo en casos de 1-lado). Si hay margen en ambos lados, no recortamos.
+    const recortar: Record<"L" | "D" | "S" | "I", boolean> = {
+      L: false,
+      D: false,
+      S: false,
+      I: false,
+    };
+
+    if (hpx > 0) {
+      if (L0 > 0 && D0 === 0)
+        recortar.D = true; // conservar izquierda -> recorto derecha
+      else if (D0 > 0 && L0 === 0) recortar.L = true; // conservar derecha -> recorto izquierda
+    }
+    if (vpx > 0) {
+      if (S0 > 0 && I0 === 0)
+        recortar.I = true; // conservar arriba -> recorto abajo
+      else if (I0 > 0 && S0 === 0) recortar.S = true; // conservar abajo -> recorto arriba
+    }
+
+    const outpaint_by = `${hpx}px ${vpx}px`;
+    return { outpaint_by, recortar, hpx, vpx };
   }
 
   downloadEdited() {
