@@ -225,11 +225,44 @@
     </div>
 
     <!-- DERECHA: Medidas procesadas (preview solo lectura) -->
-    <div class="wf-col">
-      <h3 class="color-text">Imagen Modificada</h3>
+    <!-- Panel DERECHO -->
+    <div class="right-panel">
+      <!-- Card: Imagen Modificada (preview final) -->
+      <div class="preview-card">
+        <div class="card-title">Imagen Modificada</div>
 
-      <div class="wf-stage">
-        <canvas #canvasR class="wf-canvas"></canvas>
+        <!-- Fondo externo: cuadritos azul/blanco -->
+        <div class="checker-outer">
+          <!-- Marco del lienzo: gris con cuadritos -->
+          <div
+            class="canvas-frame checker-inner"
+            [style.--w.px]="canvasW"
+            [style.--h.px]="canvasH"
+            [style.--scale]="previewScale"
+          >
+            <!-- Canvas FINAL (resultado o preprocesado) -->
+            <canvas #canvasR></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Crop enviado a Claid -->
+      <div class="preview-card">
+        <div class="card-title">Crop enviado a Claid (sin fondo)</div>
+
+        <!-- Fondo externo: cuadritos azul/blanco -->
+        <div class="checker-outer">
+          <!-- Marco del lienzo: gris con cuadritos (del tamaño del crop) -->
+          <div
+            class="canvas-frame checker-inner"
+            [style.--w.px]="cropW"
+            [style.--h.px]="cropH"
+            [style.--scale]="previewScale"
+          >
+            <!-- Canvas del CROP -->
+            <canvas #canvasCrop></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </div>

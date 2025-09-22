@@ -96,3 +96,77 @@ kbd {
 .color-text {
   color: black !important;
 }
+
+/* ===== Panel / Cards ===== */
+.right-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 8px 0 0 0;
+}
+
+.preview-card {
+  display: block;
+  padding: 8px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.preview-card .card-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* ===== Fondos chequeados ===== */
+
+/* Fondo externo: cuadritos azul/blanco (como el de la izquierda) */
+.checker-outer {
+  --b1: #f8fbff;
+  --b2: #e7f0ff;
+  background: linear-gradient(45deg, var(--b2) 25%, transparent 25%) 0 0/20px
+      20px,
+    linear-gradient(-45deg, var(--b2) 25%, transparent 25%) 0 10px/20px 20px,
+    linear-gradient(45deg, transparent 75%, var(--b2) 75%) 10px -10px/20px 20px,
+    linear-gradient(-45deg, transparent 75%, var(--b2) 75%) -10px 0/20px 20px;
+  background-color: var(--b1);
+  padding: 12px;
+  border-radius: 10px;
+}
+
+/* Marco del lienzo: cuadritos grises (mismo tamaño del canvas) */
+.canvas-frame {
+  position: relative;
+  width: calc(var(--w) * var(--scale));
+  height: calc(var(--h) * var(--scale));
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* fondo cuadriculado gris */
+.checker-inner {
+  --g1: #f0f0f0;
+  --g2: #d9d9d9;
+  background: linear-gradient(45deg, var(--g2) 25%, transparent 25%) 0 0/16px
+      16px,
+    linear-gradient(-45deg, var(--g2) 25%, transparent 25%) 0 8px/16px 16px,
+    linear-gradient(45deg, transparent 75%, var(--g2) 75%) 8px -8px/16px 16px,
+    linear-gradient(-45deg, transparent 75%, var(--g2) 75%) -8px 0/16px 16px;
+  background-color: var(--g1);
+}
+
+/* Los canvas van encima del fondo gris */
+.canvas-frame canvas {
+  position: absolute;
+  inset: 0;
+  /* El canvas tiene su tamaño lógico (width/height attributes), pero
+     para la vista lo escalamos en CSS a var(--scale) */
+  width: calc(var(--w) * var(--scale));
+  height: calc(var(--h) * var(--scale));
+  image-rendering: optimizeQuality;
+  transform-origin: top left;
+}
+
+/* Si te queda estrecho, puedes reducir el gap y el scale desde el TS */
