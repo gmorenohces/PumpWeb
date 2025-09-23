@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, ElementRef, ViewChild, NgZone } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { environment } from "../../../environments/environment";
 
 type Msg = { role: "user" | "assistant"; text: string };
 
@@ -13,9 +14,8 @@ type Msg = { role: "user" | "assistant"; text: string };
 })
 export class ChatAssistantComponent {
   @ViewChild("scrollArea") scrollArea!: ElementRef<HTMLDivElement>;
-
   // Ajusta si es otro puerto/host:
-  private API_BASE = "http://localhost:5000";
+  private API_BASE = environment.apiUrl;
   private CHAT_SSE_URL = `${this.API_BASE}/chat/stream`; // POST -> SSE
   private CHAT_HISTORY_URL = `${this.API_BASE}/chat/history`; // GET -> JSON
 
