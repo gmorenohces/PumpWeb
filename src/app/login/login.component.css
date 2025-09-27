@@ -1,32 +1,60 @@
 /* Contenedor principal */
+/* Contenedor principal */
 .login-wrapper {
   display: flex;
-  min-height: 100vh;
+  min-height: 100dvh; /* usa viewport dinámico */
   overflow: hidden;
 }
 
-/* Panel izquierdo con la imagen de fondo */
+/* IZQUIERDA: ocupa el espacio sobrante */
 .login-wrapper .login-left {
-  flex: 0 0 60%;
-  background: url("/images/bg_login.webp") center / cover no-repeat;
+  flex: 1 1 auto; /* crece y ocupa el resto */
+  /* --- opción A (mantener estilo actual con recorte elegante) --- */
+  background: url("/images/bg_login.webp") center right / cover no-repeat;
+  /* Si la imagen importante está más a la izquierda, cambia "right" por "center" o "left" */
 }
 
-/* Panel derecho */
+/* Panel derecho: alinear arriba y permitir espaciado controlado */
 .login-wrapper .login-right {
-  flex: 0 0 40%;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 2rem 3rem;
-  max-width: 480px;
-  margin: 0 auto;
+  /* antes: justify-content: center; */
+  justify-content: flex-start;
+  /* control: espacio desde el borde superior */
+  --top-space: clamp(100px, 20vh, 56px);
+  padding: var(--top-space) clamp(1.5rem, 3vw, 3rem);
+
+  /* separaciones verticales entre bloques dentro del panel */
+  gap: clamp(8px, 2vh, 20px);
 }
 
-/* Cabecera de marca dentro del login-right */
+/* Marca (logo + textos): control del espacio tras el logo */
 .login-wrapper .login-right .login-brand {
   text-align: center;
-  margin-bottom: 2rem;
+  /* control: espacio entre el bloque de marca y el formulario */
+  --gap-after-logo: clamp(10px, 20vh, 50px) !important;
+  margin-bottom: var(--gap-after-logo);
+}
+
+/* Tamaño/acomodo del logo */
+.login-wrapper .login-right .login-brand .header__logo img {
+  display: block;
+  width: min(72%, 340px); /* ajusta a gusto */
+  height: auto;
+  margin-inline: auto;
+}
+
+/* --- resto de tus estilos (tipos, inputs, botones) pueden quedarse igual --- */
+
+/* Responsive móvil: apila y muestra la imagen arriba */
+@media (max-width: 768px) {
+  .login-wrapper {
+    flex-direction: column;
+  }
+  .login-wrapper .login-left {
+    height: 40vh;
+  }
+  .login-wrapper .login-right {
+    width: 100%;
+  }
 }
 
 .login-wrapper .login-right .login-brand .brand-title {
@@ -41,6 +69,7 @@
   font-size: 1rem;
   color: #555;
   line-height: 1.4;
+  margin-top: 3rem;
 }
 
 /* Formulario */
@@ -148,4 +177,23 @@
     max-width: none;
     padding: 1.5rem;
   }
+}
+
+/* Aplica la fuente a los inputs de correo y contraseña */
+.login-right input[type="email"],
+.login-right input[type="text"],
+.login-right input[type="password"],
+.login-right .form-control {
+  font-family: "URWDINArabic", sans-serif !important;
+}
+
+/* Asegura que el placeholder use la misma fuente */
+.login-right input::placeholder {
+  font-family: "URWDINArabic", sans-serif;
+}
+
+/* (Opcional) Botón y labels con la misma fuente */
+.login-right button,
+.login-right label {
+  font-family: "URWDINArabic", sans-serif;
 }

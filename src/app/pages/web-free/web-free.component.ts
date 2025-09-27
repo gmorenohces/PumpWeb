@@ -15,6 +15,8 @@ import { MatDividerModule } from "@angular/material/divider";
 
 import { OpenAIService } from "../../services/openAI/open-ai.service";
 import { lastValueFrom } from "rxjs";
+import { DialogService } from "../../shared/dialog.service";
+import { HttpErrorResponse } from "@angular/common/http";
 
 type HandleId = "n" | "s" | "e" | "w" | "nw" | "ne" | "sw" | "se" | "none";
 type DragMode = "none" | "move" | "resize" | "pan";
@@ -68,6 +70,7 @@ export class WebFreeComponent {
   canvasCropRef!: ElementRef<HTMLCanvasElement>;
 
   private api = inject(OpenAIService);
+  private dialogs = inject(DialogService);
 
   previewScale = 0.6; // escala visual de los canvases del panel derecho
   cropW = 1;
@@ -105,6 +108,58 @@ export class WebFreeComponent {
     this.ctxL = this.canvasLRef.nativeElement.getContext("2d");
     this.ctxR = this.canvasRRef.nativeElement.getContext("2d");
     this.redrawBoth();
+  }
+
+  // ✅ helper centralizado para extraer el mensaje de un HttpErrorResponse con Blob
+  private async extractUserMessage(err: any): Promise<string> {
+    const fallback = "No pudimos procesar la imagen. Inténtalo nuevamente.";
+
+    try {
+      // --- 1) ¿Angular devolvió JSON directo? (no-blob) ---
+      const body = err?.error;
+      if (body && typeof body === "object" && !(body instanceof Blob)) {
+        if (typeof body.user_message === "string") return body.user_message;
+        if (body.code === "CLAID_UNPROCESSABLE") {
+          return "Error al editar la imagen, verifica el margen de edición intenta de nuevo";
+        }
+        if (typeof body.error === "string") return body.error;
+      }
+
+      // --- 2) ¿Angular devolvió un Blob (porque pediste responseType:'blob')? ---
+      const blob: Blob | undefined =
+        err?.error instanceof Blob ? err.error : undefined;
+      if (blob) {
+        // Si el servidor mandó JSON de error, el blob tendrá type application/json
+        const ct = blob.type || "";
+        if (ct.includes("application/json") || blob.size < 4096) {
+          const text = await blob.text();
+          try {
+            const data = JSON.parse(text || "{}");
+            if (typeof data.user_message === "string") return data.user_message;
+            if (data.code === "CLAID_UNPROCESSABLE") {
+              return "Error al editar la imagen, verifica el margen de edición intenta de nuevo";
+            }
+            if (typeof data.error === "string") return data.error;
+          } catch {
+            // no era JSON válido, seguimos
+          }
+        }
+      }
+
+      // --- 3) ¿Vino por status o message? ---
+      const status = Number(err?.status);
+      if (status === 422) {
+        return "Error al editar la imagen, verifica el margen de edición intenta de nuevo";
+      }
+      const msg = String(err?.message || "");
+      if (msg.includes("422")) {
+        return "Error al editar la imagen, verifica el margen de edición intenta de nuevo";
+      }
+    } catch (e) {
+      console.warn("extractUserMessage parse error:", e);
+    }
+
+    return fallback;
   }
 
   getOutpaintMargins(): { L: number; D: number; S: number; I: number } {
@@ -436,150 +491,6 @@ export class WebFreeComponent {
     };
   }
 
-  // async processCurrent() {
-  //   if (!this.images.length || !this.layer) return;
-  //   if (this.needsOutpainting()) {
-  //     const { outpaint_by, recortar } = this.getClaidOutpaintParams();
-  //     // Pasar outpaint_by y recortar al backend
-  //   }
-  //   // 1) Cargar base
-  //   const it = this.images[this.idx];
-  //   const base = await this.loadImage(it.url);
-
-  //   // 2) Lienzo offscreen EXACTO al preset (salida final)
-  //   const outW = this.canvasW;
-  //   const outH = this.canvasH;
-  //   const off = document.createElement("canvas");
-  //   off.width = outW;
-  //   off.height = outH;
-  //   const octx = off.getContext("2d")!;
-  //   // Asegura estado limpio
-  //   octx.setTransform(1, 0, 0, 1, 0, 0);
-  //   octx.clearRect(0, 0, outW, outH);
-
-  //   // 3) Dibuja la imagen con la transform del layer (tu lógica)
-  //   //    IMPORTANTE: aquí estás posicionando/escalando la imagen sobre el lienzo final
-  //   octx.drawImage(
-  //     base,
-  //     this.layer.x,
-  //     this.layer.y,
-  //     this.layer.w * this.layer.sx,
-  //     this.layer.h * this.layer.sy
-  //   );
-
-  //   // 4) Blob + URL del resultado final a tamaño exacto
-  //   const blob: Blob = await new Promise((res) =>
-  //     off.toBlob((b) => res(b!), "image/png", 1.0)
-  //   );
-
-  //   if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
-  //   it.processedBlob = blob;
-  //   it.processedUrl = URL.createObjectURL(blob);
-
-  //   // 5) Actualiza el canvas de la derecha AL MISMO TAMAÑO DEL PRESET
-  //   const cR = this.canvasRRef.nativeElement;
-  //   cR.width = outW;
-  //   cR.height = outH;
-  //   const rctx = cR.getContext("2d")!;
-  //   rctx.setTransform(1, 0, 0, 1, 0, 0);
-  //   rctx.clearRect(0, 0, outW, outH);
-  //   // Dibuja el resultado 1:1 para previsualizarlo
-  //   rctx.drawImage(off, 0, 0);
-
-  //   // 6) (opcional) si tu preview usa otra ruta, puedes seguir usando tu método
-  //   // this.redrawRight(); // solo si dependes de él para overlays/HUD
-
-  //   // 7) Habilita el botón de descarga
-  //   this.markProcessedReady(); // o this.canDownload = true;
-  // }
-
-  /**
-   * Procesar la imagen actual (outpainting si aplica)
-   */
-
-  // async processCurrent() {
-  //   if (!this.images.length || !this.layer) return;
-
-  //   const it = this.images[this.idx];
-  //   const outW = this.canvasW;
-  //   const outH = this.canvasH;
-
-  //   // --- SI NECESITA OUTPAINTING: ENVIAR ORIGINAL A CLAID ---
-  //   if (this.needsOutpainting()) {
-  //     const { outpaint_by, recortar } = this.getClaidOutpaintParams();
-
-  //     // 1) Blob de la imagen ORIGINAL (no el offscreen)
-  //     //    si guardas File en it.file úsalo; si no, baja del url:
-  //     const origBlob =
-  //       it.file instanceof Blob ? it.file : await (await fetch(it.url)).blob();
-
-  //     // 2) Llamar al service
-  //     const finalBlob = await lastValueFrom(
-  //       this.api.sendImageForOutpainting(
-  //         origBlob,
-  //         it.name || "input.png",
-  //         outpaint_by,
-  //         recortar,
-  //         outW,
-  //         outH
-  //       )
-  //     );
-
-  //     // 3) Guardar y previsualizar la RESPUESTA REAL
-  //     if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
-  //     it.processedBlob = finalBlob;
-  //     it.processedUrl = URL.createObjectURL(finalBlob);
-
-  //     const cR = this.canvasRRef.nativeElement;
-  //     cR.width = outW;
-  //     cR.height = outH;
-  //     const rctx = cR.getContext("2d")!;
-  //     rctx.setTransform(1, 0, 0, 1, 0, 0);
-  //     rctx.clearRect(0, 0, outW, outH);
-
-  //     const bmp = await createImageBitmap(finalBlob);
-  //     rctx.drawImage(bmp, 0, 0, outW, outH);
-
-  //     this.markProcessedReady();
-  //     return;
-  //   }
-
-  //   // --- SIN OUTPAINTING: tu flujo anterior con offscreen ---
-  //   const base = await this.loadImage(it.url);
-  //   const off = document.createElement("canvas");
-  //   off.width = outW;
-  //   off.height = outH;
-  //   const octx = off.getContext("2d")!;
-  //   octx.setTransform(1, 0, 0, 1, 0, 0);
-  //   octx.clearRect(0, 0, outW, outH);
-
-  //   octx.drawImage(
-  //     base,
-  //     this.layer.x,
-  //     this.layer.y,
-  //     this.layer.w * this.layer.sx,
-  //     this.layer.h * this.layer.sy
-  //   );
-
-  //   const blob: Blob = await new Promise((res) =>
-  //     off.toBlob((b) => res(b!), "image/png", 1.0)
-  //   );
-
-  //   if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
-  //   it.processedBlob = blob;
-  //   it.processedUrl = URL.createObjectURL(blob);
-
-  //   const cR = this.canvasRRef.nativeElement;
-  //   cR.width = outW;
-  //   cR.height = outH;
-  //   const rctx = cR.getContext("2d")!;
-  //   rctx.setTransform(1, 0, 0, 1, 0, 0);
-  //   rctx.clearRect(0, 0, outW, outH);
-  //   rctx.drawImage(off, 0, 0);
-
-  //   this.markProcessedReady();
-  // }
-
   async processCurrent() {
     if (!this.images.length || !this.layer) return;
 
@@ -727,14 +638,16 @@ export class WebFreeComponent {
       rctx.drawImage(bmp, 0, 0, outW, outH);
 
       this.markProcessedReady();
-    } catch (err) {
-      console.error("Error back:", err);
+    } catch (err: any) {
+      console.error("Error backkkkkk:", err.status);
+      const msg = await this.extractUserMessage(err);
 
       // Devolvemos el preprocesado en caso de fallo
       if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
       it.processedBlob = preBlob;
       it.processedUrl = URL.createObjectURL(preBlob);
       this.markProcessedReady();
+      this.dialogs.showError(msg);
     }
   }
 

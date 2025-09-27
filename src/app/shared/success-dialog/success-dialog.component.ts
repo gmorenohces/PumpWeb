@@ -1,60 +1,48 @@
-// success-dialog.component.ts
-import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import {
-  MatDialogModule,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from "@angular/common";
+import { Component, Inject } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import { MatIconModule } from "@angular/material/icon";
 
-export type DialogType = 'success' | 'error' | 'info';
-
-export interface SuccessDialogData {
-  type: DialogType;
+type DialogType = "success" | "error" | "info";
+type DialogData = {
   message: string;
-}
+  type?: DialogType;
+  title?: string;
+  icon?: string;
+};
 
 @Component({
-  selector: 'app-success-dialog',
+  selector: "app-success-dialog",
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
-  templateUrl: './success-dialog.component.html',
-  styleUrls: ['./success-dialog.component.css'],
+  imports: [CommonModule, FormsModule, MatIconModule],
+  templateUrl: "./success-dialog.component.html",
+  styleUrls: ["./success-dialog.component.css"],
 })
 export class SuccessDialogComponent {
+  icon: string;
+  title: string;
+  panelClass: string;
+
   constructor(
-    public dialogRef: MatDialogRef<SuccessDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: SuccessDialogData
-  ) {}
-
-  close(): void {
-    this.dialogRef.close();
+    private ref: MatDialogRef<SuccessDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData
+  ) {
+    const t: DialogType = data.type ?? "info";
+    this.icon =
+      data.icon ??
+      (t === "error" ? "error" : t === "success" ? "check_circle" : "info");
+    this.title =
+      data.title ??
+      (t === "error"
+        ? "Ocurrió un problema"
+        : t === "success"
+        ? "¡Listo!"
+        : "Información");
+    this.panelClass = `dialog-${t}`;
   }
 
-  // para el título e icono dinámico
-  get title() {
-    switch (this.data.type) {
-      case 'error':
-        return 'Error';
-      case 'info':
-        return 'Información';
-      default:
-        return '¡Éxito!';
-    }
-  }
-  get icon() {
-    switch (this.data.type) {
-      case 'error':
-        return 'error';
-      case 'info':
-        return 'info';
-      default:
-        return 'check_circle';
-    }
-  }
-  get panelClass() {
-    return `dialog-${this.data.type}`;
+  close() {
+    this.ref.close();
   }
 }

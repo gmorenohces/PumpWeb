@@ -5,11 +5,15 @@
   <!-- DERECHA: formulario -->
   <div class="login-right">
     <div class="login-brand">
-      <h1 class="brand-title">PUMP!</h1>
-      <p class="brand-subtitle">
-        Inicia sesión<br />
-        Ingresa tus datos y empieza a disfrutar
-      </p>
+      <div class="header__logo">
+        <img src="/images/LogoPump.png" alt="Pump Logo" />
+      </div>
+      <div>
+        <p class="brand-subtitle">
+          Inicia sesión<br />
+          Ingresa tus datos y empieza a disfrutar
+        </p>
+      </div>
     </div>
 
     <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="login-form">
@@ -54,10 +58,10 @@
           Ingresar
         </button>
       </div>
-      <p class="register">
+      <!-- <p class="register">
         No tienes cuenta?
         <a routerLink="/register">Regístrate</a>
-      </p>
+      </p> -->
 
       <div *ngIf="errorMessage" class="error-text">
         {{ errorMessage }}
