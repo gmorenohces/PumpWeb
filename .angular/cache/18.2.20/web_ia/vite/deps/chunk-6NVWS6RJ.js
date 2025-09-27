@@ -5717,6 +5717,7 @@ export {
   RtlScrollAxisType,
   supportsScrollBehavior,
   getRtlScrollAxisType,
+  _getFocusedElementPierceShadowDom,
   _getEventTarget,
   _isTestEnvironment,
   BACKSPACE,
@@ -5744,6 +5745,8 @@ export {
   AriaDescriber,
   ActiveDescendantKeyManager,
   FocusKeyManager,
+  InteractivityChecker,
+  FocusTrapFactory,
   isFakeMousedownFromScreenReader,
   isFakeTouchstartFromScreenReader,
   LiveAnnouncer,
@@ -5797,4 +5800,4 @@ export {
   MatRippleLoader,
   _MatInternalFormField
 };
-//# sourceMappingURL=chunk-6SZE6DJC.js.map
+//# sourceMappingURL=chunk-6NVWS6RJ.js.map
