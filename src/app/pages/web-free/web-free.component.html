@@ -1,18 +1,17 @@
 <mat-card class="wf-card">
   <!-- Toolbar -->
   <div class="wf-toolbar">
-    <button mat-stroked-button color="primary" (click)="fileInput.click()">
-      <mat-icon>folder_open</mat-icon>
+    <button mat-stroked-button color="primary" (click)="filesInput.click()">
+      <mat-icon>image</mat-icon>
       Cargar imágenes
     </button>
     <input
-      #fileInput
+      #filesInput
       type="file"
       multiple
-      accept="image/*"
+      accept=".png,.jpg,.jpeg,.webp,.gif,.bmp,.tiff,image/*"
       (change)="onPickFiles($event)"
       hidden
-      webkitdirectory
     />
 
     <button

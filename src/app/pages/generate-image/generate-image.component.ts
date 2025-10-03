@@ -1,4 +1,4 @@
-import { Component, signal, inject } from "@angular/core";
+import { Component, signal, inject, HostListener } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
@@ -60,6 +60,8 @@ export class GenerateImageComponent {
   bannerUrl = "/images/ban_images.png";
   bannerHeight = 250;
 
+  isDragOver = false;
+
   // UI
   presets = PRESETS;
   modelOptions: { label: string; value: ModelKey }[] = [
@@ -94,6 +96,72 @@ export class GenerateImageComponent {
     strength: this.fb.control(0.35),
     styles: this.fb.control<PresetKey | null>(null), // selección única
   });
+
+  @HostListener("window:dragover", ["$event"])
+  @HostListener("window:drop", ["$event"])
+  preventWindowDrop(e: DragEvent) {
+    e.preventDefault();
+  }
+
+  // --- Handlers de drag & drop sobre la stage ---
+  onDragEnter(e: DragEvent) {
+    e.preventDefault();
+    this.isDragOver = true;
+  }
+
+  onDragOver(e: DragEvent) {
+    e.preventDefault();
+  }
+
+  onDragLeave(e: DragEvent) {
+    e.preventDefault();
+    this.isDragOver = false;
+  }
+
+  async onDrop(e: DragEvent) {
+    e.preventDefault();
+    this.isDragOver = false;
+
+    const dt = e.dataTransfer;
+    if (!dt) return;
+
+    // 1) Intento directo: archivos sueltos
+    let files: File[] = Array.from(dt.files || []).filter((f) =>
+      f.type.startsWith("image/")
+    );
+
+    // 2) (Opcional) Si arrastraron algo sin type (algunos recortes), intenta items
+    if (files.length === 0 && dt.items) {
+      const items = Array.from(dt.items);
+      for (const it of items) {
+        const f = it.getAsFile();
+        if (
+          f &&
+          (f.type.startsWith("image/") ||
+            /\.(png|jpe?g|webp|gif|bmp|tiff?)$/i.test(f.name))
+        ) {
+          files.push(f);
+        }
+      }
+    }
+
+    if (files.length === 0) return;
+
+    // En esta pantalla usamos UNA imagen de entrada
+    const first = files[0];
+
+    // Convierte a FileList real y reusa tu flujo actual
+    const fileList = this.toFileList([first]);
+    const fakeEvent = { target: { files: fileList } } as unknown as Event;
+    this.onPickFile(fakeEvent); // <- tu método existente del input file
+  }
+
+  /** Crea un FileList real a partir de un array de File */
+  private toFileList(files: File[]): FileList {
+    const data = new DataTransfer();
+    files.forEach((f) => data.items.add(f));
+    return data.files;
+  }
 
   /** === Helpers de tamaño/ratio === */
   private getWH(aspect: string) {

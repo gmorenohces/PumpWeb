@@ -301,6 +301,7 @@ export class WebFreeComponent {
       this.attachLayerFromIndex(this.idx)
     );
     this.canDownload = false;
+    input.value = "";
   }
 
   private async ensureStateFor(index: number) {
