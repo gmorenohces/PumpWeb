@@ -42,6 +42,7 @@ type ImgItem = {
   state?: LayerTransform; // transform persistente por imagen
   processedUrl?: string; // preview procesada
   processedBlob?: Blob;
+  bmp?: ImageBitmap;
 };
 
 @Component({
@@ -103,11 +104,75 @@ export class WebFreeComponent {
   private spaceDown = false;
 
   canDownload = false;
+  private rafPending = false;
+
+  private templateNorm?: { x: number; y: number; W: number; H: number };
 
   ngAfterViewInit() {
     this.ctxL = this.canvasLRef.nativeElement.getContext("2d");
     this.ctxR = this.canvasRRef.nativeElement.getContext("2d");
     this.redrawBoth();
+  }
+
+  private scheduleLeftRedraw() {
+    if (this.rafPending) return;
+    this.rafPending = true;
+    requestAnimationFrame(() => {
+      this.rafPending = false;
+      this.redrawLeftCore();
+    });
+  }
+
+  private async urlToBitmap(url: string): Promise<ImageBitmap> {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await createImageBitmap(blob);
+  }
+
+  private redrawLeft() {
+    this.redrawLeftCore();
+  }
+
+  private redrawLeftCore() {
+    if (!this.ctxL) return;
+    const c = this.canvasLRef.nativeElement;
+    const rect = c.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    c.width = Math.max(1, Math.floor(rect.width * dpr));
+    c.height = Math.max(1, Math.floor(rect.height * dpr));
+
+    const ctx = this.ctxL;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.setTransform(
+      this.vp.scale * dpr,
+      0,
+      0,
+      this.vp.scale * dpr,
+      this.vp.ox * dpr,
+      this.vp.oy * dpr
+    );
+
+    this.drawChecker(ctx, this.canvasW, this.canvasH);
+    ctx.strokeStyle = "#999";
+    ctx.lineWidth = 1 / this.vp.scale;
+    ctx.strokeRect(0, 0, this.canvasW, this.canvasH);
+
+    if (this.images.length && this.layer) {
+      const it = this.images[this.idx];
+      const bmp = it?.bmp;
+      if (bmp) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(
+          bmp,
+          this.layer.x,
+          this.layer.y,
+          this.layer.w * this.layer.sx,
+          this.layer.h * this.layer.sy
+        );
+        this.drawHandles(ctx);
+      }
+    }
   }
 
   // ✅ helper centralizado para extraer el mensaje de un HttpErrorResponse con Blob
@@ -301,26 +366,52 @@ export class WebFreeComponent {
       this.attachLayerFromIndex(this.idx)
     );
     this.canDownload = false;
+    input.value = "";
   }
 
   private async ensureStateFor(index: number) {
     const it = this.images[index];
     if (!it) return;
+
+    // cachea el bitmap una sola vez
+    if (!it.bmp) {
+      it.bmp = await this.urlToBitmap(it.url);
+    }
     if (it.state) return;
-    const img = await this.loadImage(it.url);
-    // centrado con ~60% del lienzo
-    const maxSide = Math.max(img.width, img.height);
-    const target = 1.0 * Math.max(this.canvasW, this.canvasH);
-    const s = Math.min(target / maxSide, 1);
-    it.state = {
-      x: (this.canvasW - img.width * s) / 2,
-      y: (this.canvasH - img.height * s) / 2,
-      sx: s,
-      sy: s,
-      w: img.width,
-      h: img.height,
-    };
+
+    const imgW = it.bmp.width;
+    const imgH = it.bmp.height;
+
+    if (this.templateNorm) {
+      const destX = this.templateNorm.x * this.canvasW;
+      const destY = this.templateNorm.y * this.canvasH;
+      const destW = this.templateNorm.W * this.canvasW;
+      const destH = this.templateNorm.H * this.canvasH;
+
+      it.state = {
+        x: destX,
+        y: destY,
+        sx: destW / imgW,
+        sy: destH / imgH,
+        w: imgW,
+        h: imgH,
+      };
+    } else {
+      const maxSide = Math.max(imgW, imgH);
+      const target = 1.0 * Math.max(this.canvasW, this.canvasH);
+      const s = Math.min(target / maxSide, 1);
+
+      it.state = {
+        x: (this.canvasW - imgW * s) / 2,
+        y: (this.canvasH - imgH * s) / 2,
+        sx: s,
+        sy: s,
+        w: imgW,
+        h: imgH,
+      };
+    }
   }
+
   private attachLayerFromIndex(index: number) {
     this.layer = this.images[index]?.state ?? null;
     this.redrawBoth();
@@ -348,50 +439,50 @@ export class WebFreeComponent {
 
   /* ========= Render ========= */
   private redrawBoth() {
-    this.redrawLeft();
+    this.scheduleLeftRedraw();
     this.redrawRight();
   }
 
-  private redrawLeft() {
-    if (!this.ctxL) return;
-    const c = this.canvasLRef.nativeElement;
-    const rect = c.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    c.width = Math.max(1, Math.floor(rect.width * dpr));
-    c.height = Math.max(1, Math.floor(rect.height * dpr));
+  // private redrawLeft() {
+  //   if (!this.ctxL) return;
+  //   const c = this.canvasLRef.nativeElement;
+  //   const rect = c.getBoundingClientRect();
+  //   const dpr = window.devicePixelRatio || 1;
+  //   c.width = Math.max(1, Math.floor(rect.width * dpr));
+  //   c.height = Math.max(1, Math.floor(rect.height * dpr));
 
-    const ctx = this.ctxL;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, c.width, c.height);
-    ctx.setTransform(
-      this.vp.scale * dpr,
-      0,
-      0,
-      this.vp.scale * dpr,
-      this.vp.ox * dpr,
-      this.vp.oy * dpr
-    );
+  //   const ctx = this.ctxL;
+  //   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  //   ctx.clearRect(0, 0, c.width, c.height);
+  //   ctx.setTransform(
+  //     this.vp.scale * dpr,
+  //     0,
+  //     0,
+  //     this.vp.scale * dpr,
+  //     this.vp.ox * dpr,
+  //     this.vp.oy * dpr
+  //   );
 
-    this.drawChecker(ctx, this.canvasW, this.canvasH);
-    ctx.strokeStyle = "#999";
-    ctx.lineWidth = 1 / this.vp.scale;
-    ctx.strokeRect(0, 0, this.canvasW, this.canvasH);
+  //   this.drawChecker(ctx, this.canvasW, this.canvasH);
+  //   ctx.strokeStyle = "#999";
+  //   ctx.lineWidth = 1 / this.vp.scale;
+  //   ctx.strokeRect(0, 0, this.canvasW, this.canvasH);
 
-    if (this.images.length && this.layer) {
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(
-          img,
-          this.layer!.x,
-          this.layer!.y,
-          this.layer!.w * this.layer!.sx,
-          this.layer!.h * this.layer!.sy
-        );
-        this.drawHandles(ctx);
-      };
-      img.src = this.images[this.idx].url;
-    }
-  }
+  //   if (this.images.length && this.layer) {
+  //     const img = new Image();
+  //     img.onload = () => {
+  //       ctx.drawImage(
+  //         img,
+  //         this.layer!.x,
+  //         this.layer!.y,
+  //         this.layer!.w * this.layer!.sx,
+  //         this.layer!.h * this.layer!.sy
+  //       );
+  //       this.drawHandles(ctx);
+  //     };
+  //     img.src = this.images[this.idx].url;
+  //   }
+  // }
 
   private redrawRight() {
     if (!this.ctxR) return;
@@ -729,6 +820,23 @@ export class WebFreeComponent {
 
     // (opcional) si usas DPR en el canvas izquierdo, aquí NO lo apliques al derecho
     this.canDownload = false;
+    if (this.templateNorm && this.images.length) {
+      const it = this.images[this.idx];
+      if (it?.state && it?.bmp) {
+        const imgW = it.bmp.width,
+          imgH = it.bmp.height;
+        const destX = this.templateNorm.x * this.canvasW;
+        const destY = this.templateNorm.y * this.canvasH;
+        const destW = this.templateNorm.W * this.canvasW;
+        const destH = this.templateNorm.H * this.canvasH;
+        it.state.x = destX;
+        it.state.y = destY;
+        it.state.sx = destW / imgW;
+        it.state.sy = destH / imgH;
+        this.layer = it.state;
+        this.redrawLeft(); // o this.scheduleLeftRedraw();
+      }
+    }
   }
   zoomFit() {
     const c = this.canvasLRef.nativeElement;
@@ -737,13 +845,13 @@ export class WebFreeComponent {
     this.vp.scale = Math.max(0.1, Math.min(8, s));
     this.vp.ox = (rect.width - this.canvasW * this.vp.scale) / 2;
     this.vp.oy = (rect.height - this.canvasH * this.vp.scale) / 2;
-    this.redrawLeft();
+    this.scheduleLeftRedraw();
   }
   zoomReset() {
     this.vp.scale = 0.8;
     this.vp.ox = 0;
     this.vp.oy = 0;
-    this.redrawLeft();
+    this.scheduleLeftRedraw();
   }
 
   /* ========= Mouse/Keyboard (solo izquierda) ========= */
@@ -771,18 +879,20 @@ export class WebFreeComponent {
     this.vp.ox = sx - x * s1;
     this.vp.oy = sy - y * s1;
     this.vp.scale = s1;
-    this.redrawLeft();
+    this.scheduleLeftRedraw();
   }
 
   onPointerDown(ev: PointerEvent) {
     if (!this.layer) return;
+    // Si es scroll/clic medio, no hacemos nada
+    if (ev.button === 1) return;
     const c = this.canvasLRef.nativeElement;
     c.setPointerCapture(ev.pointerId);
 
     const wpt = this.screenToWorld(ev.offsetX, ev.offsetY);
     const handle = this.hitTestHandle(wpt.x, wpt.y);
 
-    if (this.spaceDown || ev.button === 1) {
+    if (this.spaceDown) {
       this.mode = "pan";
     } else if (handle !== "none") {
       this.mode = "resize";
@@ -808,13 +918,13 @@ export class WebFreeComponent {
     if (this.mode === "pan") {
       this.vp.ox += ev.movementX;
       this.vp.oy += ev.movementY;
-      this.redrawLeft();
+      this.scheduleLeftRedraw();
       return;
     }
     if (this.mode === "move") {
       this.layer.x = this.startLayer.x + dx;
       this.layer.y = this.startLayer.y + dy;
-      this.redrawLeft();
+      this.scheduleLeftRedraw();
       return;
     }
     if (this.mode === "resize") {
@@ -881,7 +991,7 @@ export class WebFreeComponent {
         L.x = newX;
         L.y = newY;
       }
-      this.redrawLeft();
+      this.scheduleLeftRedraw();
     }
   }
 
@@ -891,6 +1001,13 @@ export class WebFreeComponent {
     } catch {}
     this.mode = "none";
     this.activeHandle = "none";
+    if (this.layer) {
+      const W = (this.layer.w * this.layer.sx) / this.canvasW;
+      const H = (this.layer.h * this.layer.sy) / this.canvasH;
+      const x = this.layer.x / this.canvasW;
+      const y = this.layer.y / this.canvasH;
+      this.templateNorm = { x, y, W, H };
+    }
   }
 
   /* ========= Utilidades ========= */
@@ -951,8 +1068,21 @@ export class WebFreeComponent {
     this.images.forEach((i) => {
       URL.revokeObjectURL(i.url);
       if (i.processedUrl) URL.revokeObjectURL(i.processedUrl);
+      if (i.bmp) {
+        try {
+          i.bmp.close();
+        } catch {}
+      }
     });
   }
+
+  onAuxClick(ev: MouseEvent) {
+    if (ev.button === 1) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+  }
+
   ngOnDestroy() {
     this.disposeUrls();
   }

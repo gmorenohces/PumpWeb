@@ -31,12 +31,6 @@ import {
   trigger
 } from "./chunk-E7FKXUXL.js";
 import {
-  FormGroupDirective,
-  NgControl,
-  NgForm,
-  Validators
-} from "./chunk-TAQMK5AS.js";
-import {
   A,
   ActiveDescendantKeyManager,
   DOWN_ARROW,
@@ -61,6 +55,12 @@ import {
   hasModifierKey,
   removeAriaReferencedId
 } from "./chunk-6NVWS6RJ.js";
+import {
+  FormGroupDirective,
+  NgControl,
+  NgForm,
+  Validators
+} from "./chunk-TAQMK5AS.js";
 import {
   CommonModule,
   NgClass

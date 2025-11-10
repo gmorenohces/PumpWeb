@@ -21,72 +21,103 @@
     <!-- LEFT: Imagen de entrada -->
     <div>
       <mat-card class="mat-elevation-z4 stage-card">
-        <h3 class="card-title">
-          <mat-icon>upload</mat-icon> Imagen Pump
-        </h3>
-        <div class="stage" [style.aspect-ratio]="aspectCss">
-          <ng-container *ngIf="initPreview(); else dropZone">
-            <img
-              [src]="initPreview()!"
-              alt="input"
-              style="width: 100%; height: 100%; object-fit: contain"
-            />
-            <button
-              mat-stroked-button
-              color="warn"
-              class="stage-fab"
-              (click)="clearInit()"
-            >
-              <mat-icon>close</mat-icon> Quitar
-            </button>
-          </ng-container>
-          <ng-template #dropZone>
-            <label class="drop">
-              <input
-                type="file"
-                accept="image/*"
-                (change)="onPickFile($event)"
-                hidden
+        <mat-card-header>
+          <mat-card-title
+            ><mat-icon>image</mat-icon> Imagen Pump</mat-card-title
+          >
+        </mat-card-header>
+
+        <mat-card-content>
+          <div
+            class="stage"
+            [style.aspect-ratio]="aspectCss"
+            [class.dragover]="isDragOver1"
+            (dragenter)="onDragEnter1($event)"
+            (dragover)="onDragOver1($event)"
+            (dragleave)="onDragLeave1($event)"
+            (drop)="onDrop1($event)"
+          >
+            <ng-container *ngIf="initPreview(); else dropZone1">
+              <img
+                [src]="initPreview()!"
+                alt="input"
+                style="width: 100%; height: 100%; object-fit: contain"
               />
-              <mat-icon>add_photo_alternate</mat-icon>
-              <div>Arrastra una imagen o <span>explora</span></div>
-            </label>
-          </ng-template>
-        </div>
+              <button
+                mat-stroked-button
+                color="warn"
+                class="stage-fab"
+                (click)="clearInit()"
+              >
+                <mat-icon>close</mat-icon> Quitar
+              </button>
+            </ng-container>
+
+            <ng-template #dropZone1>
+              <label class="drop">
+                <input
+                  #fileInput1
+                  type="file"
+                  accept="image/*"
+                  (change)="onPickFile($event)"
+                  class="sr-only"
+                />
+                <mat-icon>add_photo_alternate</mat-icon>
+                <div>Arrastra una imagen o <span>explora</span></div>
+              </label>
+            </ng-template>
+          </div>
+        </mat-card-content>
       </mat-card>
+
       <mat-card class="mat-elevation-z4 stage-card">
-        <h3 class="card-title">
-          <mat-icon>upload</mat-icon> Imagen Referencia
-        </h3>
-        <div class="stage" [style.aspect-ratio]="aspectCss">
-          <ng-container *ngIf="initPreview_2(); else dropZone_2">
-            <img
-              [src]="initPreview_2()!"
-              alt="input"
-              style="width: 100%; height: 100%; object-fit: contain"
-            />
-            <button
-              mat-stroked-button
-              color="warn"
-              class="stage-fab"
-              (click)="clearInit_2()"
-            >
-              <mat-icon>close</mat-icon> Quitar
-            </button>
-          </ng-container>
-          <ng-template #dropZone_2>
-            <label class="drop">
-              <input
-                type="file"
-                accept="image/*"
-                (change)="onPickFile_2($event)"
-                hidden
+        <mat-card-header>
+          <mat-card-title
+            ><mat-icon>collections</mat-icon> Imagen Referencia</mat-card-title
+          >
+        </mat-card-header>
+
+        <mat-card-content>
+          <div
+            class="stage"
+            [style.aspect-ratio]="aspectCss"
+            [class.dragover]="isDragOver2"
+            (dragenter)="onDragEnter2($event)"
+            (dragover)="onDragOver2($event)"
+            (dragleave)="onDragLeave2($event)"
+            (drop)="onDrop2($event)"
+          >
+            <ng-container *ngIf="initPreview_2(); else dropZone2">
+              <img
+                [src]="initPreview_2()!"
+                alt="reference"
+                style="width: 100%; height: 100%; object-fit: contain"
               />
-              <mat-icon>add_photo_alternate</mat-icon>
-              <div>Arrastra una imagen o <span>explora</span></div>
-            </label>
-          </ng-template>
-        </div>
+              <button
+                mat-stroked-button
+                color="warn"
+                class="stage-fab"
+                (click)="clearInit_2()"
+              >
+                <mat-icon>close</mat-icon> Quitar
+              </button>
+            </ng-container>
+
+            <ng-template #dropZone2>
+              <label class="drop">
+                <input
+                  #fileInput2
+                  type="file"
+                  accept="image/*"
+                  (change)="onPickFile_2($event)"
+                  class="sr-only"
+                />
+                <mat-icon>add_photo_alternate</mat-icon>
+                <div>Arrastra una imagen o <span>explora</span></div>
+              </label>
+            </ng-template>
+          </div>
+        </mat-card-content>
       </mat-card>
     </div>
 

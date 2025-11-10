@@ -2,9 +2,6 @@ import {
   SelectionModel
 } from "./chunk-VCQJH3XL.js";
 import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-TAQMK5AS.js";
-import {
   DOWN_ARROW,
   Directionality,
   ENTER,
@@ -18,6 +15,9 @@ import {
   SPACE,
   UP_ARROW
 } from "./chunk-6NVWS6RJ.js";
+import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-TAQMK5AS.js";
 import "./chunk-XAXRY5N3.js";
 import {
   Attribute,

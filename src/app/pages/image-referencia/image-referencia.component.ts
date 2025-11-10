@@ -1,4 +1,4 @@
-import { Component, signal, inject } from "@angular/core";
+import { Component, signal, inject, HostListener } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
@@ -60,6 +60,9 @@ export class ImageReferenciaComponent {
   bannerUrl = "/images/ban_images.png";
   bannerHeight = 250;
 
+  isDragOver1 = false;
+  isDragOver2 = false;
+
   // UI
   presets = PRESETS;
   modelOptions: { label: string; value: ModelKey }[] = [
@@ -98,6 +101,86 @@ export class ImageReferenciaComponent {
     strength: this.fb.control(0.35),
     styles: this.fb.control<PresetKey | null>(null), // selección única
   });
+
+  // Evitar que el navegador intente abrir la imagen si se suelta fuera
+  @HostListener("window:dragover", ["$event"])
+  @HostListener("window:drop", ["$event"])
+  preventWindowDrop(e: DragEvent) {
+    e.preventDefault();
+  }
+
+  // ---------- Card 1 (Imagen Pump) ----------
+  onDragEnter1(e: DragEvent) {
+    e.preventDefault();
+    this.isDragOver1 = true;
+  }
+  onDragOver1(e: DragEvent) {
+    e.preventDefault();
+  }
+  onDragLeave1(e: DragEvent) {
+    e.preventDefault();
+    this.isDragOver1 = false;
+  }
+  onDrop1(e: DragEvent) {
+    e.preventDefault();
+    this.isDragOver1 = false;
+    const f = this.pickFirstImage(e.dataTransfer);
+    if (!f) return;
+    const fileList = this.toFileList([f]);
+    const fakeEv = { target: { files: fileList } } as unknown as Event;
+    this.onPickFile(fakeEv); // ← tu método existente
+  }
+
+  // ---------- Card 2 (Imagen Referencia) ----------
+  onDragEnter2(e: DragEvent) {
+    e.preventDefault();
+    this.isDragOver2 = true;
+  }
+  onDragOver2(e: DragEvent) {
+    e.preventDefault();
+  }
+  onDragLeave2(e: DragEvent) {
+    e.preventDefault();
+    this.isDragOver2 = false;
+  }
+  onDrop2(e: DragEvent) {
+    e.preventDefault();
+    this.isDragOver2 = false;
+    const f = this.pickFirstImage(e.dataTransfer);
+    if (!f) return;
+    const fileList = this.toFileList([f]);
+    const fakeEv = { target: { files: fileList } } as unknown as Event;
+    this.onPickFile_2(fakeEv); // ← tu método existente
+  }
+
+  // ---------- Utilidades ----------
+  private pickFirstImage(dt: DataTransfer | null): File | null {
+    if (!dt) return null;
+    // 1) Archivos directos
+    const files = Array.from(dt.files || []).filter((x) =>
+      x.type.startsWith("image/")
+    );
+    if (files.length) return files[0];
+    // 2) Items (por si viene sin MIME)
+    if (dt.items) {
+      for (const it of Array.from(dt.items)) {
+        const f = it.getAsFile();
+        if (!f) continue;
+        if (
+          f.type.startsWith("image/") ||
+          /\.(png|jpe?g|webp|gif|bmp|tiff?)$/i.test(f.name)
+        )
+          return f;
+      }
+    }
+    return null;
+  }
+
+  private toFileList(files: File[]): FileList {
+    const dt = new DataTransfer();
+    files.forEach((f) => dt.items.add(f));
+    return dt.files;
+  }
 
   /** === Helpers de tamaño/ratio === */
   private getWH(aspect: string) {

@@ -74,3 +74,24 @@
 .color-text {
   color: white !important;
 }
+
+.stage.dragover {
+  outline: 2px dashed #22d3ee;
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.drop:hover {
+  text-decoration: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+  white-space: nowrap;
+}

@@ -21,7 +21,16 @@
     <!-- LEFT: Imagen de entrada -->
     <mat-card class="mat-elevation-z4 stage-card">
       <h3 class="card-title"><mat-icon>upload</mat-icon> Imagen de entrada</h3>
-      <div class="stage" [style.aspect-ratio]="aspectCss">
+
+      <div
+        class="stage"
+        [style.aspect-ratio]="aspectCss"
+        [class.dragover]="isDragOver"
+        (dragenter)="onDragEnter($event)"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+      >
         <ng-container *ngIf="initPreview(); else dropZone">
           <img
             [src]="initPreview()!"
@@ -37,13 +46,15 @@
             <mat-icon>close</mat-icon> Quitar
           </button>
         </ng-container>
+
         <ng-template #dropZone>
           <label class="drop">
             <input
+              #fileInput
               type="file"
               accept="image/*"
               (change)="onPickFile($event)"
-              hidden
+              class="sr-only"
             />
             <mat-icon>add_photo_alternate</mat-icon>
             <div>Arrastra una imagen o <span>explora</span></div>
