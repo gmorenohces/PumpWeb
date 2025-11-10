@@ -1,4 +1,11 @@
-import { Component, signal, inject, HostListener } from "@angular/core";
+import {
+  Component,
+  signal,
+  inject,
+  HostListener,
+  ViewChild,
+  ElementRef,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule } from "@angular/router";
 import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
@@ -55,6 +62,8 @@ export class GenerateImageComponent {
   private fb = inject(FormBuilder);
   private api = inject(OpenAIService);
   private snack = inject(MatSnackBar);
+  @ViewChild("fileInput", { static: false })
+  fileInputRef!: ElementRef<HTMLInputElement>;
 
   // Banner
   bannerUrl = "/images/ban_images.png";
@@ -84,6 +93,7 @@ export class GenerateImageComponent {
   initFile = signal<File | null>(null);
   initPreview = signal<string | null>(null); // dataURL
   resultPreview = signal<string | null>(null); // url o dataURL
+  initUrl?: string;
 
   // Form
   form = this.fb.group({
@@ -125,12 +135,9 @@ export class GenerateImageComponent {
     const dt = e.dataTransfer;
     if (!dt) return;
 
-    // 1) Intento directo: archivos sueltos
     let files: File[] = Array.from(dt.files || []).filter((f) =>
       f.type.startsWith("image/")
     );
-
-    // 2) (Opcional) Si arrastraron algo sin type (algunos recortes), intenta items
     if (files.length === 0 && dt.items) {
       const items = Array.from(dt.items);
       for (const it of items) {
@@ -144,16 +151,17 @@ export class GenerateImageComponent {
         }
       }
     }
+    if (!files.length) return;
 
-    if (files.length === 0) return;
-
-    // En esta pantalla usamos UNA imagen de entrada
     const first = files[0];
+    this.initFile.set(first);
+    this.initPreview.set(await this.fileToDataURL(first));
 
-    // Convierte a FileList real y reusa tu flujo actual
-    const fileList = this.toFileList([first]);
-    const fakeEvent = { target: { files: fileList } } as unknown as Event;
-    this.onPickFile(fakeEvent); // <- tu método existente del input file
+    // Limpia el input escondido por si luego abren el diálogo y eligen el mismo archivo
+    try {
+      this.fileInputRef?.nativeElement &&
+        (this.fileInputRef.nativeElement.value = "");
+    } catch {}
   }
 
   /** Crea un FileList real a partir de un array de File */
@@ -193,15 +201,29 @@ export class GenerateImageComponent {
   /** === File helpers === */
   async onPickFile(ev: Event) {
     const input = ev.target as HTMLInputElement;
-    if (!input.files || !input.files.length) return;
-    const f = input.files[0];
+    const f = input.files && input.files[0];
+    if (!f) return;
+
+    // Setea señales
     this.initFile.set(f);
     this.initPreview.set(await this.fileToDataURL(f));
+
+    try {
+      input.value = "";
+    } catch {}
   }
+
   clearInit() {
     this.initFile.set(null);
     this.initPreview.set(null);
+
+    // Limpia también el input (evita que quede “pegado” el último archivo)
+    try {
+      this.fileInputRef?.nativeElement &&
+        (this.fileInputRef.nativeElement.value = "");
+    } catch {}
   }
+
   private fileToDataURL(file: File): Promise<string> {
     return new Promise((res, rej) => {
       const r = new FileReader();

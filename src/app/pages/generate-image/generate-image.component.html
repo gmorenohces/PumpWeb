@@ -48,13 +48,13 @@
         </ng-container>
 
         <ng-template #dropZone>
-          <label class="drop" (click)="fileInput.click()">
+          <label class="drop">
             <input
               #fileInput
               type="file"
               accept="image/*"
               (change)="onPickFile($event)"
-              hidden
+              class="sr-only"
             />
             <mat-icon>add_photo_alternate</mat-icon>
             <div>Arrastra una imagen o <span>explora</span></div>

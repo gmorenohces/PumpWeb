@@ -1,345 +1,414 @@
-<div class="webp-container">
-  <div
-    class="webp-banner"
-    [ngStyle]="{
-      'background-image': 'url(' + bannerUrl + ')',
-      'height.px': bannerHeight
-    }"
-  >
-    <div class="webp-banner__overlay"></div>
-    <div class="webp-banner__text">
-      <h2>GENERACIÓN DE IMÁGENES</h2>
-      <p>
-        Inspírate y crea imágenes únicas a partir de tus ideas o transforma
-        fotos en nuevas obras.
-      </p>
-    </div>
-  </div>
-  <div class="webp-bannerCards">
-    <!-- Acciones (opcional) -->
-    <div class="actions-row">
-      <button mat-stroked-button color="primary" (click)="fileInput.click()">
-        Cargar imágenes
+<mat-card class="wf-card">
+  <!-- Toolbar -->
+  <div class="wf-toolbar">
+    <!-- Cargar imágenes -->
+    <button mat-stroked-button color="primary" (click)="fileInput.click()">
+      <mat-icon>image</mat-icon>
+      Cargar imágenes
+    </button>
+    <input
+      #fileInput
+      type="file"
+      multiple
+      accept=".png,.jpg,.jpeg,.webp,.gif,.bmp,.tiff,image/*"
+      (change)="onPickFiles($event)"
+      hidden
+    />
+
+    <!-- Presets -->
+    <button
+      mat-stroked-button
+      [matMenuTriggerFor]="menuPresets"
+      #presetsTrigger="matMenuTrigger"
+      matTooltip="Presets de lienzo"
+    >
+      <mat-icon>crop_square</mat-icon> Presets
+    </button>
+
+    <mat-menu #menuPresets="matMenu">
+      <!-- Presets rápidos -->
+      <button mat-menu-item (click)="setCanvasPreset(512, 512)">
+        512 × 512 (1:1)
       </button>
-      <input
-        #fileInput
-        type="file"
-        accept="image/*"
-        multiple
-        hidden
-        (change)="onFilesSelected($event)"
-      />
-      <button
-        mat-stroked-button
-        color="warn"
-        [disabled]="!originalFrames.length"
-        (click)="resetAll()"
+      <button mat-menu-item (click)="setCanvasPreset(683, 512)">
+        683 × 512 (4:3)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(512, 683)">
+        512 × 683 (3:4)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(910, 512)">
+        910 × 512 (16:9)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(1024, 1024)">
+        1024 × 1024 (1:1)
+      </button>
+      <button mat-menu-item (click)="setCanvasPreset(1080, 1080)">
+        1080 × 1080 (1:1)
+      </button>
+
+      <mat-divider></mat-divider>
+
+      <!-- Preset personalizado -->
+      <div
+        class="wf-menu-form"
+        (click)="$event.stopPropagation()"
+        (keydown)="$event.stopPropagation()"
+        style="padding: 8px 12px; width: 260px"
       >
-        Limpiar
-      </button>
-      <button
-        mat-flat-button
-        color="primary"
-        [disabled]="!processedFrames.length && !originalFrames.length"
-        (click)="downloadZip()"
-      >
-        Descargar ZIP
-      </button>
-    </div>
-
-    <!-- Layout: main (4 cards) + aside (params) -->
-    <div class="layout">
-      <div class="main">
-        <!-- Fila 1 -->
-        <div class="cardImage">
-          <!-- Card 1: Original -->
-          <mat-card class="card">
-            <mat-card-header>
-              <mat-card-title
-                >Original (frame {{ currentIndex + 1 }}/{{
-                  originalFrames.length || 0
-                }})</mat-card-title
-              >
-              <mat-card-subtitle *ngIf="originalFrames.length">
-                {{ originalFrames[currentIndex]?.name }}
-              </mat-card-subtitle>
-            </mat-card-header>
-
-            <mat-card-content
-              class="card-media"
-              [class.checker]="params.showChecker"
-              [class.pixel-view]="params.view1to1"
-            >
-              <img
-                *ngIf="originalFrames.length"
-                [src]="originalFrames[currentIndex]?.url"
-                alt="original"
-              />
-              <div class="placeholder" *ngIf="!originalFrames.length">
-                Carga tus imágenes para empezar
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <!-- Card 2: Procesada -->
-          <mat-card class="card">
-            <mat-card-header>
-              <mat-card-title>Procesada (preview)</mat-card-title>
-              <mat-card-subtitle *ngIf="processedFrames.length">
-                {{ processedFrames[currentIndex]?.name }}
-              </mat-card-subtitle>
-            </mat-card-header>
-
-            <mat-card-content
-              class="card-media"
-              [class.checker]="params.showChecker"
-              [class.pixel-view]="params.view1to1"
-            >
-              <img
-                *ngIf="processedFrames.length"
-                [src]="processedFrames[currentIndex]?.url"
-                alt="processed"
-              />
-              <div class="placeholder" *ngIf="!processedFrames.length">
-                Aún no aplicas cambios
-              </div>
-            </mat-card-content>
-
-            <!-- <mat-card-actions
-              class="card-actions"
-              *ngIf="processedFrames.length"
-            >
-            </mat-card-actions> -->
-          </mat-card>
+        <div style="font-weight: 600; margin-bottom: 8px">
+          Preset personalizado
         </div>
 
-        <!-- Fila 2 -->
-        <div class="cardImage">
-          <!-- Card 3: 360 Original -->
-          <mat-card class="card viewer-card">
-            <mat-card-header>
-              <mat-card-title>360 Original</mat-card-title>
-              <mat-card-subtitle>Arrastra para rotar</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content class="viewer">
-              <img
-                class="viewer-img"
-                *ngIf="originalFrames.length"
-                [src]="originalFrames[viewerIndex]?.url"
-                (mousedown)="startDrag($event, 'original')"
-                (touchstart)="startDrag($event, 'original')"
-                alt="360 original"
-              />
-              <div class="placeholder" *ngIf="!originalFrames.length">
-                Sin imágenes
-              </div>
-            </mat-card-content>
-          </mat-card>
+        <div
+          style="
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+          "
+        >
+          <input
+            #pw
+            type="number"
+            min="1"
+            max="8192"
+            step="1"
+            [value]="canvasW"
+            placeholder="Ancho"
+            autocomplete="off"
+            style="
+              width: 110px;
+              padding: 6px 8px;
+              border: 1px solid #d0d5dd;
+              border-radius: 6px;
+            "
+          />
+          <span>×</span>
+          <input
+            #ph
+            type="number"
+            min="1"
+            max="8192"
+            step="1"
+            [value]="canvasH"
+            placeholder="Alto"
+            autocomplete="off"
+            style="
+              width: 110px;
+              padding: 6px 8px;
+              border: 1px solid #d0d5dd;
+              border-radius: 6px;
+            "
+          />
+        </div>
 
-          <!-- Card 4: 360 Procesado -->
-          <mat-card class="card viewer-card">
-            <mat-card-header>
-              <mat-card-title>360 Procesado</mat-card-title>
-              <mat-card-subtitle>Arrastra para rotar</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content class="viewer">
-              <img
-                class="viewer-img"
-                *ngIf="processedFrames.length"
-                [src]="processedFrames[viewerIndex]?.url"
-                (mousedown)="startDrag($event, 'processed')"
-                (touchstart)="startDrag($event, 'processed')"
-                alt="360 processed"
-              />
-              <div class="placeholder" *ngIf="!processedFrames.length">
-                Aplica cambios para ver el 360
-              </div>
-            </mat-card-content>
-          </mat-card>
+        <div style="display: flex; gap: 8px">
+          <button
+            mat-stroked-button
+            color="primary"
+            (click)="
+              setCanvasPreset(
+                pw.valueAsNumber || +pw.value,
+                ph.valueAsNumber || +ph.value
+              );
+              presetsTrigger.closeMenu()
+            "
+            [disabled]="
+              !(pw.value || pw.valueAsNumber) || !(ph.value || ph.valueAsNumber)
+            "
+          >
+            Aplicar
+          </button>
         </div>
       </div>
+    </mat-menu>
 
-      <!-- Panel de parámetros -->
-      <aside class="params">
-        <mat-card class="card params-card">
-          <mat-card-header>
-            <mat-card-title class="color-input">Parámetros</mat-card-title>
-            <mat-card-subtitle>Aplican a todas las imágenes</mat-card-subtitle>
-          </mat-card-header>
-          <div class="meta" *ngIf="originalFrames.length">
-            <p>
-              <strong>Total Imágenes Cargadas:</strong>
-              {{ originalFrames.length }}
-            </p>
+    <!-- Info -->
+    <div class="wf-info" *ngIf="images.length">
+      <span>{{ idx + 1 }} / {{ images.length }}</span>
+      <span class="wf-name">{{ images[idx]?.name }}</span>
+      <span class="wf-sep">|</span>
+      <span>Canvas: {{ canvasW }}×{{ canvasH }}</span>
+      <span>
+        Peso: <b>{{ formatBytes(originalBytes) }}</b>
+        <ng-container *ngIf="processedBytes">
+          → <b>{{ formatBytes(processedBytes) }}</b>
+          <ng-container *ngIf="savingPct !== null">
+            (<span [style.color]="savingPct! >= 0 ? '#059669' : '#b91c1c'">
+              {{ savingSign }}{{ savingAbs }}% </span
+            >)
+          </ng-container>
+        </ng-container>
+      </span>
+    </div>
+
+    <span class="wf-flex"></span>
+    <!-- Centrar imagen respecto al lienzo -->
+    <button
+      mat-icon-button
+      matTooltip="Centrar en lienzo"
+      (click)="centerLayer()"
+    >
+      <mat-icon>my_location</mat-icon>
+    </button>
+    <!-- Controles vista -->
+    <button mat-icon-button matTooltip="Ajustar vista" (click)="zoomFit()">
+      <mat-icon>fit_screen</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="Reset vista" (click)="zoomReset()">
+      <mat-icon>center_focus_weak</mat-icon>
+    </button>
+
+    <!-- Navegación -->
+    <button
+      mat-icon-button
+      matTooltip="Anterior"
+      (click)="prev()"
+      [disabled]="!images.length || idx === 0"
+    >
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      matTooltip="Siguiente"
+      (click)="next()"
+      [disabled]="!images.length || idx === images.length - 1"
+    >
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+    <mat-button-toggle-group
+      [(ngModel)]="outputType"
+      name="fmt"
+      aria-label="Formato de salida"
+    >
+      <mat-button-toggle value="image/webp" matTooltip="WEBP (comprimido)"
+        >WEBP</mat-button-toggle
+      >
+      <mat-button-toggle value="image/png" matTooltip="PNG (sin pérdidas)"
+        >PNG</mat-button-toggle
+      >
+    </mat-button-toggle-group>
+
+    <!-- Procesado -->
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="processAll()"
+      [disabled]="!images.length"
+      style="margin-left: 8px"
+      matTooltip="Aplicar el encuadre, formato y calidad a todas las imágenes"
+    >
+      Procesar
+    </button>
+    <!-- <button
+      mat-flat-button
+      color="primary"
+      (click)="processCurrent()"
+      [disabled]="!images.length"
+      style="margin-left: 8px"
+    >
+      Procesar
+    </button>
+
+    <button
+      mat-flat-button
+      color="accent"
+      (click)="processAllWithCurrentTransform()"
+      [disabled]="!images.length"
+      style="margin-left: 8px"
+      matTooltip="Aplicar el mismo encuadre a todas las imágenes 360"
+    >
+      Aplicar a 360
+    </button> -->
+    <div style="display: flex; align-items: center; gap: 8px; margin-left: 8px">
+      <span style="font-size: 12px; color: #6b7280">Calidad</span>
+      <input
+        type="number"
+        min="0"
+        max="1"
+        step="0.05"
+        [(ngModel)]="quality"
+        [disabled]="outputType !== 'image/webp'"
+        style="
+          width: 70px;
+          padding: 4px 6px;
+          border: 1px solid #d0d5dd;
+          border-radius: 6px;
+        "
+      />
+    </div>
+
+    <button
+      mat-flat-button
+      color="accent"
+      (click)="downloadAllZip()"
+      [disabled]="!canDownloadZip"
+      style="margin-left: 8px"
+      matTooltip="Descargar todas las imágenes procesadas (ZIP)"
+    >
+      <mat-icon>archive</mat-icon>
+      Descargar ZIP
+    </button>
+  </div>
+
+  <!-- GRID: dos cards -->
+  <div class="wf-grid">
+    <!-- IZQUIERDA: Editor -->
+    <div class="preview-card">
+      <h3 class="color-text card-title">Imagen Original</h3>
+
+      <div
+        class="wf-stage"
+        (wheel)="onWheel($event)"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp($event)"
+        (auxclick)="onAuxClick($event)"
+      >
+        <canvas #canvasL class="wf-canvas"></canvas>
+
+        <!-- HUD (valores) -->
+        <div class="wf-hud" *ngIf="layer">
+          <div>
+            X: <b>{{ hud.x }}</b> &nbsp; Y: <b>{{ hud.y }}</b>
           </div>
-          <mat-card-content class="params-form color-input">
-            <mat-form-field appearance="outline" class="w-100" class="color-input">
-              <mat-label class="color-label">Imagen de referencia</mat-label>
-
-              <mat-select
-                [disabled]="!originalFrames.length"
-                [value]="currentIndex"
-                (selectionChange)="setInitialIndex($event.value)"
-                class="color-input"
-              >
-                <mat-option
-                  *ngFor="let f of originalFrames; let i = index"
-                  [value]="i"
-                >
-                  {{ i + 1 }} — {{ f.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <!-- Metadatos del frame seleccionado -->
-            <div class="info-block" *ngIf="originalFrames.length">
-              <div class="info-row">
-                <span class="label">Archivo:</span>
-                <span class="value">{{
-                  originalFrames[currentIndex]?.name
-                }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">Tamaño:</span>
-                <span class="value">{{
-                  originalFrames[currentIndex]?.sizeHuman
-                }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">WxH:</span>
-                <span class="value">
-                  {{ originalFrames[currentIndex]?.width }}×{{
-                    originalFrames[currentIndex]?.height
-                  }}
-                </span>
-              </div>
-            </div>
-
-            <div class="row two">
-              <mat-form-field appearance="outline" class="margin-hint">
-                <mat-label class="color-label"
-                  >Recorte lateral (L/R px)</mat-label
-                >
-                <input
-                  matInput
-                  type="number"
-                  min="0"
-                  [(ngModel)]="params.trimX"
-                  name="trimX"
-                  class="color-input"
-                />
-                <mat-hint>Izquierda y derecha</mat-hint>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="margin-hint">
-                <mat-label class="color-label"
-                  >Recorte vertical (T/B px)</mat-label
-                >
-                <input
-                  matInput
-                  type="number"
-                  min="0"
-                  [(ngModel)]="params.trimY"
-                  name="trimY"
-                  class="color-input"
-                />
-                <mat-hint>Arriba y abajo</mat-hint>
-              </mat-form-field>
-            </div>
-
-            <mat-checkbox [(ngModel)]="params.lockAspect" class="color-input"
-              >Mantener relación de aspecto</mat-checkbox
-            >
-
-            <div class="div-wh">
-              <mat-form-field appearance="outline">
-                <mat-label class="color-label">Ancho</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  min="1"
-                  [(ngModel)]="params.targetW"
-                  class="color-input"
-                />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label class="color-label">Alto</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  min="1"
-                  [(ngModel)]="params.targetH"
-                  class="color-input"
-                />
-              </mat-form-field>
-            </div>
-
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label class="color-label">Calidad (0.1–1.0)</mat-label>
-              <input
-                matInput
-                type="number"
-                step="0.1"
-                min="0.1"
-                max="1"
-                [(ngModel)]="params.quality"
-                class="color-input"
-              />
-            </mat-form-field>
-
-            <mat-button-toggle-group
-              [(ngModel)]="params.format"
-              name="fmt"
-              class="w-100"
-            >
-              <mat-button-toggle value="webp" class="color-input"
-                >WEBP</mat-button-toggle
-              >
-              <mat-button-toggle value="jpeg" class="color-input"
-                >JPG</mat-button-toggle
-              >
-              <mat-button-toggle value="png" class="color-input"
-                >PNG</mat-button-toggle
-              >
-            </mat-button-toggle-group>
-          </mat-card-content>
-          <mat-checkbox [(ngModel)]="params.showChecker"
-            >Fondo damero</mat-checkbox
-          >
-          <div class="meta">
-            <h2>Resultado</h2>
+          <div>
+            W×H: <b>{{ hud.w }}×{{ hud.h }}</b> &nbsp; | &nbsp; escala:
+            <b>{{ hud.s }}</b>
           </div>
+        </div>
 
-          <div class="meta">
-            <span>Tamaño: {{ processedFrames[currentIndex]?.sizeHuman }}</span>
-            <span
-              >WxH: {{ processedFrames[currentIndex]?.width }}×{{
-                processedFrames[currentIndex]?.height
-              }}</span
-            >
-            <span>Ahorro: {{ processedFrames[currentIndex]?.savePct }}%</span>
-          </div>
+        <div class="wf-hint">
+          Zoom: rueda | Pan: <kbd>Espacio</kbd> + arrastrar | Mover: arrastrar |
+          Resize: tiradores
+        </div>
+      </div>
+    </div>
 
-          <mat-card-actions class="params-actions">
-            <button
-              mat-flat-button
-              color="primary"
-              [disabled]="!originalFrames.length"
-              (click)="applyToAll()"
+    <!-- DERECHA: Preview procesado -->
+    <div class="preview-card">
+      <div class="card-title">Imagen Modificada (preview)</div>
+
+      <div class="checker-outer">
+        <div
+          class="canvas-frame checker-inner"
+          [style.--w.px]="canvasW"
+          [style.--h.px]="canvasH"
+          [style.--scale]="previewScale"
+        >
+          <!-- Canvas FINAL (lo pinta el TS) -->
+          <canvas #canvasR></canvas>
+
+          <!-- Si aún no hay procesado, mensaje -->
+          <ng-container *ngIf="!processedCurrentSrc">
+            <div
+              style="
+                position: absolute;
+                inset: 8px auto auto 8px;
+                opacity: 0.6;
+                font-size: 13px;
+              "
             >
-              Aplicar a todas
-            </button>
-            <button
-              mat-stroked-button
-              [disabled]="!processedFrames.length"
-              (click)="revertProcessed()"
-            >
-              Revertir
-            </button>
-          </mat-card-actions>
-        </mat-card>
-      </aside>
+              Aún no aplicas cambios
+            </div>
+          </ng-container>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+
+  <!-- ===== Visores 360 ===== -->
+
+  <!-- ===== Visores 360 (dos columnas) ===== -->
+  <div class="wf-grid wf-grid-360">
+    <!-- 360 Original -->
+    <div class="preview-card">
+      <div class="card-title">360 Original</div>
+      <div class="checker-outer">
+        <div
+          class="canvas-frame checker-inner"
+          [style.--w.px]="canvasW"
+          [style.--h.px]="canvasH"
+          [style.--scale]="previewScale"
+          (pointerdown)="on360Down($event)"
+          (pointermove)="on360Move($event, 'orig')"
+          (pointerup)="on360Up($event)"
+        >
+          <ng-container *ngIf="origSrc as src; else noOrig">
+            <img
+              [src]="src"
+              alt="360 original"
+              style="
+                width: calc(var(--w) * var(--scale));
+                height: calc(var(--h) * var(--scale));
+                user-select: none;
+              "
+              draggable="false"
+            />
+          </ng-container>
+          <ng-template #noOrig>
+            <div style="opacity: 0.6; font-size: 13px; padding: 12px">
+              Sin imágenes
+            </div>
+          </ng-template>
+          <div
+            style="
+              position: absolute;
+              bottom: 6px;
+              left: 8px;
+              opacity: 0.7;
+              font-size: 12px;
+            "
+          >
+            Arrastra para rotar
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 360 Procesado -->
+    <div class="preview-card">
+      <div class="card-title">360 Procesado</div>
+      <div class="checker-outer">
+        <div
+          class="canvas-frame checker-inner"
+          [style.--w.px]="canvasW"
+          [style.--h.px]="canvasH"
+          [style.--scale]="previewScale"
+          (pointerdown)="on360Down($event)"
+          (pointermove)="on360Move($event, 'proc')"
+          (pointerup)="on360Up($event)"
+        >
+          <ng-container *ngIf="procSrc as src; else noProc360">
+            <img
+              [src]="src"
+              alt="360 procesado"
+              style="
+                width: calc(var(--w) * var(--scale));
+                height: calc(var(--h) * var(--scale));
+                user-select: none;
+              "
+              draggable="false"
+            />
+          </ng-container>
+          <ng-template #noProc360>
+            <div style="opacity: 0.6; font-size: 13px; padding: 12px">
+              Aplica cambios para ver el 360
+            </div>
+          </ng-template>
+          <div
+            style="
+              position: absolute;
+              bottom: 6px;
+              left: 8px;
+              opacity: 0.7;
+              font-size: 12px;
+            "
+          >
+            Arrastra para rotar
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-card>

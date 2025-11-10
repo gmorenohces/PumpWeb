@@ -54,13 +54,13 @@
             </ng-container>
 
             <ng-template #dropZone1>
-              <label class="drop" (click)="fileInput1.click()">
+              <label class="drop">
                 <input
                   #fileInput1
                   type="file"
                   accept="image/*"
                   (change)="onPickFile($event)"
-                  hidden
+                  class="sr-only"
                 />
                 <mat-icon>add_photo_alternate</mat-icon>
                 <div>Arrastra una imagen o <span>explora</span></div>
@@ -104,13 +104,13 @@
             </ng-container>
 
             <ng-template #dropZone2>
-              <label class="drop" (click)="fileInput2.click()">
+              <label class="drop">
                 <input
                   #fileInput2
                   type="file"
                   accept="image/*"
                   (change)="onPickFile_2($event)"
-                  hidden
+                  class="sr-only"
                 />
                 <mat-icon>add_photo_alternate</mat-icon>
                 <div>Arrastra una imagen o <span>explora</span></div>
