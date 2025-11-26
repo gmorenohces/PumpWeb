@@ -8,6 +8,8 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatDividerModule } from "@angular/material/divider";
 import { FormsModule } from "@angular/forms";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 type HandleId = "n" | "s" | "e" | "w" | "nw" | "ne" | "sw" | "se" | "none";
 type DragMode = "none" | "move" | "resize" | "pan";
@@ -859,12 +861,14 @@ export class Web360Component {
       this.templateNorm.y = this.layer.y / this.canvasH;
     }
   }
+
   async downloadAllZip(): Promise<void> {
     if (!this.images.length) return;
 
     // Asegurar que TODAS estén procesadas con el formato/calidad actual
     for (let i = 0; i < this.images.length; i++) {
       const it = this.images[i];
+
       const needFormat =
         !it.processedBlob ||
         (this.outputType === "image/webp" &&
@@ -879,10 +883,7 @@ export class Web360Component {
       }
     }
 
-    // Cargar libs on-demand
-    const JSZip = (await import("jszip")).default;
-    const { saveAs } = await import("file-saver");
-
+    // YA NO usamos imports dinámicos, usamos los estáticos de arriba
     const zip = new JSZip();
     const ext = this.outputType === "image/webp" ? "webp" : "png";
 
@@ -902,41 +903,12 @@ export class Web360Component {
       this.outputType === "image/webp"
         ? `_q${Math.round(this.quality * 100)}`
         : "";
+
     saveAs(
       zipBlob,
       `edits_${this.canvasW}x${this.canvasH}_${fmtTag}${qTag}_${stamp}.zip`
     );
   }
-
-  // async downloadAllZip(): Promise<void> {
-  //   if (!this.images.length) return;
-
-  //   // Asegurar que todas estén procesadas (por si el usuario no presionó Aplicar a 360)
-  //   for (let i = 0; i < this.images.length; i++) {
-  //     if (!this.images[i].processedBlob) {
-  //       await this.ensureStateFor(i);
-  //       await this.applyTemplateToIndex(i);
-  //       await this.processIndex(i);
-  //     }
-  //   }
-
-  //   // Cargar libs on-demand (no bloquean tu bundle principal)
-  //   const JSZip = (await import("jszip")).default;
-  //   const { saveAs } = await import("file-saver");
-
-  //   const zip = new JSZip();
-
-  //   this.images.forEach((it, i) => {
-  //     const base = (it.name || `frame_${i + 1}`).replace(/\.[^.]+$/, "");
-  //     const filename = `${base}_edit_${this.canvasW}x${this.canvasH}.png`;
-  //     const blob = it.processedBlob!;
-  //     zip.file(filename, blob);
-  //   });
-
-  //   const zipBlob = await zip.generateAsync({ type: "blob" });
-  //   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-  //   saveAs(zipBlob, `edits_${this.canvasW}x${this.canvasH}_${stamp}.zip`);
-  // }
 
   // info de tamaños (del frame actual)
   get originalBytes(): number {
