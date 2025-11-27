@@ -89,3 +89,7 @@
   overflow: hidden;
   white-space: nowrap;
 }
+
+.textarea {
+  height: 480px !important;
+}

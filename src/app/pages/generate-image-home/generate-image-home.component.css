@@ -97,3 +97,7 @@
   width: 120px;
   margin-top: 10px;
 }
+
+.textarea {
+  height: 480px !important;
+}
