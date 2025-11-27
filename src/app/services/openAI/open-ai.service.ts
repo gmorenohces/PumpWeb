@@ -9,7 +9,8 @@ interface OpenAiResponse {
 }
 
 /** Proveedor que usará el backend para rutear la petición a OpenAI, Stability o GetImg */
-export type ProviderKey = "openai" | "stability" | "getimg";
+export type ProviderKey = "openai" | "gemini";
+//export type ProviderKey = "openai" | "stability" | "getimg";
 
 /** === TXT2IMG === */
 export interface TextToImageRequest {

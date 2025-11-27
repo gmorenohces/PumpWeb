@@ -17,6 +17,8 @@ import { OpenAIService } from "../../services/openAI/open-ai.service";
 import { lastValueFrom } from "rxjs";
 import { DialogService } from "../../shared/dialog.service";
 import { HttpErrorResponse } from "@angular/common/http";
+import { MatButtonToggleModule } from "@angular/material/button-toggle";
+import { FormsModule } from "@angular/forms";
 
 type HandleId = "n" | "s" | "e" | "w" | "nw" | "ne" | "sw" | "se" | "none";
 type DragMode = "none" | "move" | "resize" | "pan";
@@ -56,6 +58,8 @@ type ImgItem = {
     MatTooltipModule,
     MatMenuModule,
     MatDividerModule,
+    FormsModule,
+    MatButtonToggleModule,
   ],
   templateUrl: "./web-free.component.html",
   styleUrl: "./web-free.component.css",
@@ -106,12 +110,47 @@ export class WebFreeComponent {
   canDownload = false;
   private rafPending = false;
 
+  outputType: "image/webp" | "image/png" = "image/webp";
+  quality: number = 0.8; // calidad para WEBP (0–1).// --- Métricas de peso (bytes) ---
+  originalBytes = 0;
+  outputBytes = 0;
+
   private templateNorm?: { x: number; y: number; W: number; H: number };
 
   ngAfterViewInit() {
     this.ctxL = this.canvasLRef.nativeElement.getContext("2d");
     this.ctxR = this.canvasRRef.nativeElement.getContext("2d");
     this.redrawBoth();
+  }
+
+  // Cambiar formato al hacer clic en los botones del toolbar
+  setOutputType(fmt: "image/webp" | "image/png") {
+    this.outputType = fmt;
+  }
+
+  /** Formatea bytes a B / KB / MB con 1–2 decimales */
+  private formatBytes(b: number): string {
+    if (!b || b <= 0) return "0 B";
+    const KB = 1024;
+    const MB = 1024 * 1024;
+
+    if (b >= MB) return (b / MB).toFixed(2) + " MB";
+    if (b >= KB) return (b / KB).toFixed(1) + " KB";
+    return b + " B";
+  }
+
+  get weightInfo(): string | null {
+    if (!this.originalBytes || !this.outputBytes) return null;
+
+    const before = this.formatBytes(this.originalBytes);
+    const after = this.formatBytes(this.outputBytes);
+
+    const diff =
+      ((this.outputBytes - this.originalBytes) / this.originalBytes) * 100;
+    const sign = diff <= 0 ? "−" : "+"; // usa el guion largo para verse bonito
+    const pct = Math.abs(diff).toFixed(1);
+
+    return `Peso: ${before} → ${after} (${sign}${pct}%)`;
   }
 
   private scheduleLeftRedraw() {
@@ -309,12 +348,14 @@ export class WebFreeComponent {
     };
   }
 
-  private canvasToBlob(
-    cnv: HTMLCanvasElement,
-    type = "image/png",
-    quality = 1.0
-  ): Promise<Blob> {
-    return new Promise((res) => cnv.toBlob((b) => res(b!), type, quality));
+  private canvasToBlob(cnv: HTMLCanvasElement): Promise<Blob> {
+    const mime = this.outputType; // "image/webp" o "image/png"
+    const q =
+      mime === "image/webp"
+        ? this.quality // aplica calidad 0–1 para WEBP
+        : 1.0; // PNG ignora calidad, pero dejamos 1.0
+
+    return new Promise((res) => cnv.toBlob((b) => res(b!), mime, q));
   }
 
   private async blobToBitmap(blob: Blob): Promise<ImageBitmap> {
@@ -413,7 +454,15 @@ export class WebFreeComponent {
   }
 
   private attachLayerFromIndex(index: number) {
-    this.layer = this.images[index]?.state ?? null;
+    const it = this.images[index];
+    this.layer = it?.state ?? null;
+
+    // Tamaño del archivo original (si existe)
+    this.originalBytes = it?.file?.size ?? 0;
+
+    // Si ya fue procesada, mostramos también su peso de salida
+    this.outputBytes = it?.processedBlob ? it.processedBlob.size : 0;
+
     this.redrawBoth();
   }
 
@@ -442,47 +491,6 @@ export class WebFreeComponent {
     this.scheduleLeftRedraw();
     this.redrawRight();
   }
-
-  // private redrawLeft() {
-  //   if (!this.ctxL) return;
-  //   const c = this.canvasLRef.nativeElement;
-  //   const rect = c.getBoundingClientRect();
-  //   const dpr = window.devicePixelRatio || 1;
-  //   c.width = Math.max(1, Math.floor(rect.width * dpr));
-  //   c.height = Math.max(1, Math.floor(rect.height * dpr));
-
-  //   const ctx = this.ctxL;
-  //   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  //   ctx.clearRect(0, 0, c.width, c.height);
-  //   ctx.setTransform(
-  //     this.vp.scale * dpr,
-  //     0,
-  //     0,
-  //     this.vp.scale * dpr,
-  //     this.vp.ox * dpr,
-  //     this.vp.oy * dpr
-  //   );
-
-  //   this.drawChecker(ctx, this.canvasW, this.canvasH);
-  //   ctx.strokeStyle = "#999";
-  //   ctx.lineWidth = 1 / this.vp.scale;
-  //   ctx.strokeRect(0, 0, this.canvasW, this.canvasH);
-
-  //   if (this.images.length && this.layer) {
-  //     const img = new Image();
-  //     img.onload = () => {
-  //       ctx.drawImage(
-  //         img,
-  //         this.layer!.x,
-  //         this.layer!.y,
-  //         this.layer!.w * this.layer!.sx,
-  //         this.layer!.h * this.layer!.sy
-  //       );
-  //       this.drawHandles(ctx);
-  //     };
-  //     img.src = this.images[this.idx].url;
-  //   }
-  // }
 
   private redrawRight() {
     if (!this.ctxR) return;
@@ -589,6 +597,8 @@ export class WebFreeComponent {
     const outW = this.canvasW;
     const outH = this.canvasH;
 
+    this.originalBytes = it.file?.size ?? 0;
+
     // 1) Componer SIEMPRE el preprocesado 1:1 del lienzo
     const base = await this.loadImage(it.url);
     const off = document.createElement("canvas");
@@ -623,6 +633,8 @@ export class WebFreeComponent {
       if (it.processedUrl) URL.revokeObjectURL(it.processedUrl);
       it.processedBlob = preBlob;
       it.processedUrl = URL.createObjectURL(preBlob);
+
+      this.outputBytes = preBlob.size;
 
       // limpiar card del crop
       if (this.canvasCropRef) {
@@ -778,34 +790,33 @@ export class WebFreeComponent {
   }
 
   downloadEdited() {
-    const canvas = this.canvasRRef?.nativeElement; // <-- aquí
+    const canvas = this.canvasRRef?.nativeElement;
     if (!canvas) return;
 
     const base =
       (this.images?.[this.idx]?.name || "imagen").replace(/\.[^.]+$/, "") ||
       "imagen";
-    const filename = `${base}_edit_${this.canvasW}x${this.canvasH}.png`;
 
-    if (canvas.toBlob) {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return;
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = filename;
-          a.click();
-          URL.revokeObjectURL(url);
-        },
-        "image/png",
-        1.0
-      );
-    } else {
-      const a = document.createElement("a");
-      a.href = canvas.toDataURL("image/png");
-      a.download = filename;
-      a.click();
-    }
+    const ext = this.outputType === "image/webp" ? "webp" : "png";
+    const mime = this.outputType;
+    const q = mime === "image/webp" ? this.quality : 1.0;
+
+    const filename = `${base}_edit_${this.canvasW}x${this.canvasH}.${ext}`;
+
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      mime,
+      q
+    );
   }
 
   /* ========= Controles de vista / presets ========= */

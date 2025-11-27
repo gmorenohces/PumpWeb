@@ -29,7 +29,8 @@ import {
 } from "../../services/openAI/open-ai.service";
 
 /** Igual que en el service (union para el provider) */
-type ModelKey = "openai" | "stability" | "getimg";
+type ModelKey = "openai" | "gemini";
+//type ModelKey = "openai" | "stability" | "getimg";
 
 @Component({
   selector: "app-text-image",
@@ -66,10 +67,14 @@ export class TextImageComponent {
 
   // UI
   presets = PRESETS;
+  // modelOptions: { label: string; value: ModelKey }[] = [
+  //   { label: "OpenAI", value: "openai" },
+  //   { label: "Stability AI", value: "stability" },
+  //   { label: "GetImg AI", value: "getimg" },
+  // ];
   modelOptions: { label: string; value: ModelKey }[] = [
     { label: "OpenAI", value: "openai" },
-    { label: "Stability AI", value: "stability" },
-    { label: "GetImg AI", value: "getimg" },
+    { label: "Google", value: "gemini" },
   ];
   aspectOptions = [
     { label: "1:1 Cuadrado", value: "1:1" },
@@ -131,7 +136,7 @@ export class TextImageComponent {
     const finalPrompt = applyPresetsToPrompt(v.prompt ?? "", selected);
 
     return {
-      provider: v.model as ModelKey, // 👈 ahora se llama provider
+      provider: v.model as ModelKey,
       prompt: finalPrompt,
       negative_prompt: v.negative || undefined,
       width: w,

@@ -141,6 +141,9 @@
       <span class="wf-name">{{ images[idx]?.name }}</span>
       <span class="wf-sep">|</span>
       <span>Canvas: {{ canvasW }}×{{ canvasH }}</span>
+      <span class="weight-info" *ngIf="weightInfo">
+        {{ weightInfo }}
+      </span>
     </div>
 
     <span class="wf-flex"></span>
@@ -168,7 +171,18 @@
     >
       <mat-icon>chevron_right</mat-icon>
     </button>
-
+    <mat-button-toggle-group
+      [(ngModel)]="outputType"
+      name="fmt"
+      aria-label="Formato de salida"
+    >
+      <mat-button-toggle value="image/webp" matTooltip="WEBP (comprimido)"
+        >WEBP</mat-button-toggle
+      >
+      <mat-button-toggle value="image/png" matTooltip="PNG (sin pérdidas)"
+        >PNG</mat-button-toggle
+      >
+    </mat-button-toggle-group>
     <button
       mat-flat-button
       color="primary"
@@ -178,6 +192,23 @@
     >
       Procesar
     </button>
+    <div style="display: flex; align-items: center; gap: 8px; margin-left: 8px">
+      <span style="font-size: 12px; color: #6b7280">Calidad</span>
+      <input
+        type="number"
+        min="0"
+        max="1"
+        step="0.05"
+        [(ngModel)]="quality"
+        [disabled]="outputType !== 'image/webp'"
+        style="
+          width: 70px;
+          padding: 4px 6px;
+          border: 1px solid #d0d5dd;
+          border-radius: 6px;
+        "
+      />
+    </div>
     <button
       mat-flat-button
       color="accent"

@@ -26,7 +26,7 @@ import {
   ImageToImageReferenceRequest,
 } from "../../services/openAI/open-ai.service";
 
-type ModelKey = "openai" | "stability" | "getimg";
+type ModelKey = "openai" | "gemini";
 
 @Component({
   selector: "app-image-referencia",
@@ -67,8 +67,7 @@ export class ImageReferenciaComponent {
   presets = PRESETS;
   modelOptions: { label: string; value: ModelKey }[] = [
     { label: "OpenAI", value: "openai" },
-    { label: "Stability AI", value: "stability" },
-    { label: "GetImg AI", value: "getimg" },
+    { label: "Google", value: "gemini" },
   ];
   aspectOptions = [
     { label: "1:1 Cuadrado", value: "1:1" },

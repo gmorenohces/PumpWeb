@@ -277,3 +277,7 @@
 .color-select {
   color: white !important;
 }
+
+.amttextarea {
+  height: 480px !important;
+}

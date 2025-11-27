@@ -33,7 +33,7 @@ import {
   ImageToImageRequest,
 } from "../../services/openAI/open-ai.service";
 
-type ModelKey = "openai" | "stability" | "getimg";
+type ModelKey = "openai" | "gemini";
 
 @Component({
   selector: "app-generate-image",
@@ -75,8 +75,7 @@ export class GenerateImageComponent {
   presets = PRESETS;
   modelOptions: { label: string; value: ModelKey }[] = [
     { label: "OpenAI", value: "openai" },
-    { label: "Stability AI", value: "stability" },
-    { label: "GetImg AI", value: "getimg" },
+    { label: "Google", value: "gemini" },
   ];
   aspectOptions = [
     { label: "1:1 Cuadrado", value: "1:1" },
