@@ -75,7 +75,7 @@ export class GenerateImageComponent {
   presets = PRESETS;
   modelOptions: { label: string; value: ModelKey }[] = [
     { label: "OpenAI", value: "openai" },
-    //{ label: "Google", value: "gemini" },
+    { label: "Google", value: "gemini" },
   ];
   aspectOptions = [
     { label: "1:1 Cuadrado", value: "1:1" },
