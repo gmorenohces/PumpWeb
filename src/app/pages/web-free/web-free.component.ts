@@ -73,6 +73,8 @@ export class WebFreeComponent {
   canvasRRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild("canvasCrop", { static: false })
   canvasCropRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild("tiffInput", { static: false })
+  tiffInputRef!: ElementRef<HTMLInputElement>;
 
   private api = inject(OpenAIService);
   private dialogs = inject(DialogService);
@@ -115,12 +117,96 @@ export class WebFreeComponent {
   originalBytes = 0;
   outputBytes = 0;
 
+  isBusy = false;
+  itemsImages: [] = [];
+
   private templateNorm?: { x: number; y: number; W: number; H: number };
 
   ngAfterViewInit() {
     this.ctxL = this.canvasLRef.nativeElement.getContext("2d");
     this.ctxR = this.canvasRRef.nativeElement.getContext("2d");
     this.redrawBoth();
+  }
+
+  // === TIFF helpers ===
+  openTiffPicker(): void {
+    if (!this.tiffInputRef) return;
+    // limpiamos el valor para que al escoger el mismo archivo se dispare igual
+    this.tiffInputRef.nativeElement.value = "";
+    this.tiffInputRef.nativeElement.click();
+  }
+
+  async onTiffSelected(ev: Event): Promise<void> {
+    const input = ev.target as HTMLInputElement;
+    if (!input.files || !input.files.length) return;
+
+    const files = Array.from(input.files);
+    input.value = ""; // limpiar
+    const items = await this.convertTiffFiles(files);
+  }
+
+  private async convertTiffFiles(files: File[]): Promise<void> {
+    if (!files.length) return;
+
+    // Si tienes una bandera global de carga, úsala
+    if (typeof this.isBusy !== "undefined") {
+      this.isBusy = true;
+    }
+
+    try {
+      // 1) llamar al back a través del servicio
+      const items = await this.api.convertTiffToPng(files);
+
+      // 2) por cada PNG devuelto, convertir a Blob/URL y añadir a `this.images`
+      for (const item of items) {
+        const blob = this.dataUrlToBlob(item.data_url);
+        const safeName =
+          item.name?.replace(/\.[^.]+$/, "") + ".png" || "tiff_converted.png";
+
+        const file = new File([blob], safeName, { type: blob.type });
+        const url = URL.createObjectURL(blob);
+
+        this.images.push({
+          name: safeName,
+          url,
+          file, // ✅ ahora cumple la interfaz ImgItem
+          processedBlob: undefined,
+          processedUrl: undefined,
+          bmp: undefined,
+          state: undefined,
+        });
+      }
+
+      // 3) Si no había selección, seleccionamos la primera
+      if (this.images.length && (this.idx == null || this.idx < 0)) {
+        this.idx = 0;
+        await this.ensureStateFor(this.idx);
+        this.attachLayerFromIndex(this.idx); // para actualizar layer + pesos
+        this.redrawBoth(); // ✅ en vez de this.redrawAll()
+      }
+    } catch (err) {
+      console.error("Error convirtiendo TIFF:", err);
+      // Si tienes snackbar/dialog:
+      // this.dialogs.showError("No se pudieron convertir los archivos TIFF.");
+    } finally {
+      if (typeof this.isBusy !== "undefined") {
+        this.isBusy = false;
+      }
+    }
+  }
+
+  /** Helper rápido para pasar dataURL -> Blob */
+  private dataUrlToBlob(dataUrl: string): Blob {
+    const [meta, b64] = dataUrl.split(",");
+    const mimeMatch = /data:(.*?);base64/.exec(meta || "");
+    const mime = mimeMatch ? mimeMatch[1] : "image/png";
+    const binary = atob(b64 || "");
+    const len = binary.length;
+    const arr = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      arr[i] = binary.charCodeAt(i);
+    }
+    return new Blob([arr], { type: mime });
   }
 
   // Cambiar formato al hacer clic en los botones del toolbar

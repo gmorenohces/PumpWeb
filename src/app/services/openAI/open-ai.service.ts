@@ -83,12 +83,37 @@ interface AiResponse {
   error?: string;
 }
 
+interface TiffConvertItem {
+  name: string;
+  data_url: string; // data:image/png;base64,...
+}
+
 @Injectable({
   providedIn: "root",
 })
 export class OpenAIService {
   private path = environment.apiUrl + "/users";
   private readonly _http = inject(HttpClient);
+
+  /** ==================== TIFF → PNG ==================== */
+  async convertTiffToPng(files: File[]): Promise<TiffConvertItem[]> {
+    if (!files.length) return [];
+
+    const fd = new FormData();
+    for (const f of files) {
+      fd.append("files", f, f.name);
+    }
+    console.log("Enviando archivos TIFF para conversión:", files);
+
+    // Ajusta el endpoint si en tu back usas otro path
+    const endpoint = `${this.path}/convert-tiff`;
+
+    const res = await firstValueFrom(
+      this._http.post<TiffConvertItem[]>(endpoint, fd)
+    );
+
+    return res || [];
+  }
 
   sendImageForOutpainting(
     blob: Blob,

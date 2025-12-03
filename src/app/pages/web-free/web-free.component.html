@@ -5,12 +5,24 @@
       <mat-icon>image</mat-icon>
       Cargar imágenes
     </button>
+    <button class="btn-secondary" (click)="openTiffPicker()">
+      Convertir TIFF
+    </button>
     <input
       #filesInput
       type="file"
       multiple
       accept=".png,.jpg,.jpeg,.webp,.gif,.bmp,.tiff,image/*"
       (change)="onPickFiles($event)"
+      hidden
+    />
+
+    <input
+      #tiffInput
+      type="file"
+      accept=".tif,.tiff"
+      multiple
+      (change)="onTiffSelected($event)"
       hidden
     />
 

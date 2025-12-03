@@ -205,4 +205,20 @@ kbd {
   white-space: nowrap;
 }
 
-/* Si te queda estrecho, puedes reducir el gap y el scale desde el TS */
+/* Botón TIFF: mismo estilo base que el primary pero un poco más suave */
+.btn-secondary {
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid #4f46e5;
+  background: transparent;
+  color: #4f46e5;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: 0.75rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: #eef2ff;
+}
