@@ -153,6 +153,8 @@ export class WebFreeComponent {
       this.isBusy = true;
     }
 
+    const startIndex = this.images.length;
+
     try {
       // 1) llamar al back a través del servicio
       const items = await this.api.convertTiffToPng(files);
@@ -178,16 +180,44 @@ export class WebFreeComponent {
       }
 
       // 3) Si no había selección, seleccionamos la primera
-      if (this.images.length && (this.idx == null || this.idx < 0)) {
-        this.idx = 0;
+      if (
+        !this.layer ||
+        this.idx == null ||
+        this.idx < 0 ||
+        this.idx >= this.images.length
+      ) {
+        this.idx = startIndex; // será 0 si eran las primeras imágenes
         await this.ensureStateFor(this.idx);
-        this.attachLayerFromIndex(this.idx); // para actualizar layer + pesos
-        this.redrawBoth(); // ✅ en vez de this.redrawAll()
+        this.attachLayerFromIndex(this.idx);
+        this.redrawBoth();
       }
     } catch (err) {
       console.error("Error convirtiendo TIFF:", err);
-      // Si tienes snackbar/dialog:
-      // this.dialogs.showError("No se pudieron convertir los archivos TIFF.");
+      console.error("Error convirtiendo TIFF:", err);
+
+      let userMessage =
+        "El archivo es demasiado grande. Intenta con uno de menor tamaño.";
+
+      // HttpErrorResponse de Angular
+      const httpErr = err as HttpErrorResponse;
+      const body = httpErr?.error;
+
+      // 1) Si el back envió JSON con user_message (nuestro handler/app_error)
+      if (
+        body &&
+        typeof body === "object" &&
+        typeof body.user_message === "string"
+      ) {
+        userMessage =
+          "El archivo es demasiado grande. Intenta con uno de menor tamaño.";
+      } else if (httpErr.status === 413) {
+        // 2) Fallback explícito por si llega otro 413 sin JSON
+        userMessage =
+          "El archivo es demasiado grande. Intenta con uno de menor tamaño.";
+      }
+
+      // Mostrar el diálogo de error
+      this.dialogs.showError(userMessage);
     } finally {
       if (typeof this.isBusy !== "undefined") {
         this.isBusy = false;
